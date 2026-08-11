@@ -77,8 +77,8 @@ export default function Header() {
 
           <nav className="px-5 py-3 flex items-center justify-between">
             {/* Logo */}
-            <a href="#" className="px-4 py-2 text-xl font-bold text-foreground tracking-tight">
-              KH
+            <a href="#" className="px-3 py-2 flex items-center">
+              <img src="/logo.png" alt="KH Logo" className="h-9 w-9 object-contain" />
             </a>
 
             {/* Desktop Nav */}
@@ -203,7 +203,7 @@ export default function Header() {
             >
               <div className="flex flex-col h-full p-6">
                 <div className="flex items-center justify-between mb-10">
-                  <span className="text-2xl font-bold text-foreground tracking-tight">KH</span>
+                  <img src="/logo.png" alt="KH Logo" className="h-10 w-10 object-contain" />
                   <button
                     className="p-3 text-foreground/70 hover:text-foreground rounded-xl transition-all hover:bg-white/10"
                     onClick={() => setIsMobileMenuOpen(false)}
