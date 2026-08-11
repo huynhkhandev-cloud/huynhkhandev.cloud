@@ -35,11 +35,19 @@ const translations = {
     },
     about: {
       title: "Giới thiệu",
+      bio: "Tôi là một Backend Developer chuyên về data engineering và business intelligence. Với kinh nghiệm xây dựng hệ thống xử lý toàn bộ vòng đời dữ liệu — từ ingestion đến visualization — tôi kết nối giữa dữ liệu thô và insight có ý nghĩa.\n\nCách tiếp cận của tôi kết hợp giữa thực hành phát triển phần mềm vững chắc và tư duy hướng dữ liệu. Tôi quan tâm đến độ tin cậy của hệ thống, kiến trúc sạch và xây dựng giải pháp có thể mở rộng. Dù là API NestJS, pipeline PySpark hay report Power BI, tôi tập trung vào việc làm cho các thành phần hoạt động liền mạch cùng nhau.",
       stats: {
         backend: "Backend Focus",
         fullstack: "Full Stack",
         dataDriven: "Data Driven",
         automation: "Automation",
+      },
+      skills: {
+        backend: "Backend",
+        frontend: "Frontend",
+        database: "Database",
+        dataBI: "Data & BI",
+        cloudDevOps: "Cloud & DevOps",
       },
     },
     projects: {
@@ -100,11 +108,19 @@ const translations = {
     },
     about: {
       title: "About Me",
+      bio: "I'm a Backend Developer specializing in data engineering and business intelligence. With experience building systems that handle the full data lifecycle — from ingestion to visualization — I bridge the gap between raw data and actionable insights.\n\nMy approach combines solid software engineering practices with data-centric thinking. I care about system reliability, clean architecture, and building solutions that scale. Whether it's a NestJS API, a PySpark pipeline, or a Power BI report, I focus on making the pieces work together seamlessly.",
       stats: {
         backend: "Backend Focus",
         fullstack: "Full Stack",
         dataDriven: "Data Driven",
         automation: "Automation",
+      },
+      skills: {
+        backend: "Backend",
+        frontend: "Frontend",
+        database: "Database",
+        dataBI: "Data & BI",
+        cloudDevOps: "Cloud & DevOps",
       },
     },
     projects: {

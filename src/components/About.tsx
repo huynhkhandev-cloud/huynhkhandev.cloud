@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
 import {
   Server,
   Monitor,
@@ -11,7 +12,7 @@ import {
   Terminal,
   Layers,
 } from "lucide-react";
-import { skills, aboutText } from "@/lib/content";
+import { skills } from "@/lib/content";
 import { useI18n } from "@/contexts/I18nContext";
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -22,17 +23,46 @@ const iconMap: Record<string, React.ReactNode> = {
   Cloud: <Cloud size={20} />,
 };
 
+const skillKeys: Record<string, string> = {
+  "Backend": "about.skills.backend",
+  "Frontend": "about.skills.frontend",
+  "Database": "about.skills.database",
+  "Data & BI": "about.skills.dataBI",
+  "Cloud & DevOps": "about.skills.cloudDevOps",
+};
+
+function SectionWrapper({ children, id }: { children: React.ReactNode; id: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
+
+  return (
+    <section
+      ref={ref}
+      id={id}
+      className="min-h-screen flex items-center py-20 md:py-32"
+    >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full"
+      >
+        {children}
+      </motion.div>
+    </section>
+  );
+}
+
 export default function About() {
   const { t } = useI18n();
 
   return (
-    <section id="about" className="py-20 md:py-32">
+    <SectionWrapper id="about">
       <div className="max-w-6xl mx-auto px-6">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
@@ -45,12 +75,11 @@ export default function About() {
           {/* Bio */}
           <motion.div
             initial={{ opacity: 0, x: -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <p className="text-lg text-foreground-muted leading-relaxed whitespace-pre-line">
-              {aboutText}
+              {t("about.bio")}
             </p>
 
             {/* Quick Stats */}
@@ -101,8 +130,7 @@ export default function About() {
           {/* Skills Grid */}
           <motion.div
             initial={{ opacity: 0, x: 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="grid gap-4"
           >
@@ -110,8 +138,7 @@ export default function About() {
               <motion.div
                 key={skill.category}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
                 className="p-5 bg-background-secondary rounded-xl border border-border hover:border-foreground/20 transition-colors"
               >
@@ -119,7 +146,7 @@ export default function About() {
                   <div className="p-2 bg-foreground/5 rounded-lg text-foreground">
                     {iconMap[skill.icon] || <Server size={20} />}
                   </div>
-                  <h3 className="font-semibold text-foreground">{skill.category}</h3>
+                  <h3 className="font-semibold text-foreground">{t(skillKeys[skill.category] || skill.category)}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {skill.items.map((item) => (
@@ -136,6 +163,6 @@ export default function About() {
           </motion.div>
         </div>
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
