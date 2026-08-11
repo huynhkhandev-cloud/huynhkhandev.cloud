@@ -54,9 +54,8 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       }`}
       style={{
         transition: isVisible
-          ? "opacity 0.5s ease-out, transform 0.5s ease-out, max-height 0.3s ease-in-out"
+          ? `opacity 0.5s ease-out ${index * 0.1}s, transform 0.5s ease-out ${index * 0.1}s`
           : "none",
-        transitionDelay: `${index * 0.1}s`,
       }}
     >
       {/* Card Header */}
