@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Mail, Sun, Moon, Globe } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "./ui/Icons";
@@ -18,6 +18,8 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const navRef = useRef<HTMLUListElement>(null);
   const { theme, toggleTheme } = useTheme();
   const { locale, setLocale, t } = useI18n();
 
@@ -43,6 +45,23 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (navRef.current) {
+      const activeIndex = navLinks.findIndex(
+        (link) => link.href.slice(1) === activeSection
+      );
+      if (activeIndex >= 0) {
+        const activeItem = navRef.current.children[activeIndex] as HTMLElement;
+        if (activeItem) {
+          setIndicatorStyle({
+            left: activeItem.offsetLeft,
+            width: activeItem.offsetWidth,
+          });
+        }
+      }
+    }
+  }, [activeSection]);
+
   const toggleLocale = () => {
     setLocale(locale === "vi" ? "en" : "vi");
   };
@@ -55,85 +74,154 @@ export default function Header() {
         transition={{ duration: 0.6, delay: 0.2 }}
         className="fixed top-3 left-3 right-3 z-50"
       >
-        <div className="liquid-glass mx-auto max-w-6xl">
-          <nav className="px-6 py-4 flex items-center justify-between">
+        <div className="liquid-glass mx-auto max-w-4xl">
+          <nav className="px-4 py-3 flex items-center justify-between">
+            {/* Logo */}
             <a
               href="#"
-              className="text-xl font-bold text-foreground"
+              className="relative px-3 py-2 text-lg font-bold text-foreground transition-all duration-300 hover:scale-105"
             >
-              KH
+              <span className="relative z-10">KH</span>
+              <motion.span
+                className="absolute inset-0 bg-accent-primary/10 rounded-lg opacity-0 hover:opacity-100"
+                transition={{ duration: 0.2 }}
+              />
             </a>
 
-            {/* Desktop Nav */}
-            <ul className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors duration-200 hover:text-accent-primary ${
-                    activeSection === link.href.slice(1)
-                      ? "text-accent-primary"
-                      : "text-foreground-muted"
-                  }`}
-                >
-                  {t(link.key)}
-                </a>
-              </li>
-            ))}
-          </ul>
+            {/* Desktop Nav with Liquid Glass Blob */}
+            <div className="relative hidden md:block">
+              <ul ref={navRef} className="flex items-center gap-1 p-1 rounded-xl">
+                {navLinks.map((link) => {
+                  const isActive = activeSection === link.href.slice(1);
+                  return (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        className={`relative px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300 ${
+                          isActive
+                            ? "text-foreground"
+                            : "text-foreground-muted hover:text-foreground"
+                        }`}
+                      >
+                        {t(link.key)}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
 
-          {/* Controls */}
-          <div className="flex items-center gap-3">
-            {/* Language Toggle */}
-            <button
-              onClick={toggleLocale}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg hover:border-accent-primary/30"
-              title={locale === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
-            >
-              <Globe size={16} />
-              <span className="uppercase font-medium">{locale}</span>
-            </button>
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg hover:border-accent-primary/30"
-              title={theme === "dark" ? t("theme.light") : t("theme.dark")}
-            >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-
-            {/* Social Links */}
-            <div className="hidden md:flex items-center gap-3">
-              <a
-                href="https://github.com/huynhkhandev-cloud"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground-muted hover:text-accent-primary transition-colors"
+              {/* Liquid Glass Blob Indicator */}
+              <motion.div
+                className="absolute bottom-0 h-[calc(100%-6px)] rounded-xl bg-gradient-to-br from-accent-primary/20 to-accent-primary/5 backdrop-blur-md border border-accent-primary/20 shadow-lg"
+                initial={false}
+                animate={{
+                  left: indicatorStyle.left,
+                  width: indicatorStyle.width,
+                  opacity: activeSection ? 1 : 0,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 400,
+                  damping: 30,
+                }}
               >
-                <GithubIcon size={20} />
-              </a>
-              <a
-                href="https://linkedin.com/in/khanhhuynh"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-foreground-muted hover:text-accent-primary transition-colors"
-              >
-                <LinkedinIcon size={20} />
-              </a>
+                {/* Inner glow effect */}
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/10 to-transparent" />
+                {/* Shimmer effect */}
+                <motion.div
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                  animate={{
+                    x: ["-100%", "200%"],
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    repeatDelay: 3,
+                  }}
+                />
+              </motion.div>
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden text-foreground-muted hover:text-foreground"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu size={24} />
-            </button>
-          </div>
+            {/* Controls */}
+            <div className="flex items-center gap-2">
+              {/* Language Toggle */}
+              <button
+                onClick={toggleLocale}
+                className="group relative flex items-center gap-1.5 px-3 py-2 text-xs font-medium uppercase tracking-wider text-foreground-muted hover:text-foreground rounded-lg transition-all duration-200 hover:bg-accent-primary/5"
+                title={locale === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
+              >
+                <Globe size={14} className="transition-transform duration-200 group-hover:rotate-12" />
+                <span>{locale}</span>
+                <motion.span
+                  className="absolute inset-0 rounded-lg bg-accent-primary/10 opacity-0 group-hover:opacity-100"
+                  transition={{ duration: 0.2 }}
+                />
+              </button>
+
+              {/* Theme Toggle */}
+              <motion.button
+                onClick={toggleTheme}
+                className="group relative p-2 text-foreground-muted hover:text-foreground rounded-lg transition-all duration-200 hover:bg-accent-primary/5"
+                title={theme === "dark" ? t("theme.light") : t("theme.dark")}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <motion.div
+                  key={theme}
+                  initial={{ scale: 0, rotate: -90, opacity: 0 }}
+                  animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                  exit={{ scale: 0, rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+                </motion.div>
+              </motion.button>
+
+              {/* Social Links */}
+              <div className="hidden md:flex items-center gap-1 pl-1">
+                <motion.a
+                  href="https://github.com/huynhkhandev-cloud"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative p-2 text-foreground-muted hover:text-foreground rounded-lg transition-all duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <GithubIcon size={18} />
+                  <motion.span
+                    className="absolute inset-0 rounded-lg bg-accent-primary/10 opacity-0 group-hover:opacity-100"
+                    transition={{ duration: 0.2 }}
+                  />
+                </motion.a>
+                <motion.a
+                  href="https://linkedin.com/in/khanhhuynh"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative p-2 text-foreground-muted hover:text-foreground rounded-lg transition-all duration-200"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <LinkedinIcon size={18} />
+                  <motion.span
+                    className="absolute inset-0 rounded-lg bg-accent-primary/10 opacity-0 group-hover:opacity-100"
+                    transition={{ duration: 0.2 }}
+                  />
+                </motion.a>
+              </div>
+
+              {/* Mobile Menu Button */}
+              <motion.button
+                className="md:hidden relative p-2 text-foreground-muted hover:text-foreground rounded-lg hover:bg-accent-primary/5"
+                onClick={() => setIsMobileMenuOpen(true)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Menu size={20} />
+              </motion.button>
+            </div>
           </nav>
-          </div>
-        </motion.header>
+        </div>
+      </motion.header>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
@@ -143,83 +231,109 @@ export default function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xl md:hidden"
+            onClick={() => setIsMobileMenuOpen(false)}
           >
-            <div className="liquid-glass fixed inset-x-3 top-3 mx-auto max-w-6xl h-[calc(100vh-1.5rem)] rounded-2xl flex flex-col">
-            <div className="flex flex-col h-full p-6">
-              <div className="flex items-center justify-between mb-12">
-                <span className="text-xl font-bold text-foreground">KH</span>
-                <button
-                  className="text-foreground-muted hover:text-foreground"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <ul className="flex flex-col gap-6">
-                {navLinks.map((link, index) => (
-                  <motion.li
-                    key={link.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="liquid-glass fixed inset-x-3 top-3 mx-auto max-w-4xl h-[calc(100vh-1.5rem)] rounded-2xl flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex flex-col h-full p-5">
+                <div className="flex items-center justify-between mb-10">
+                  <span className="text-xl font-bold text-foreground">KH</span>
+                  <motion.button
+                    className="p-2 text-foreground-muted hover:text-foreground rounded-lg hover:bg-accent-primary/5"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                   >
-                    <a
-                      href={link.href}
-                      className="text-2xl font-medium text-foreground-muted hover:text-accent-primary transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
+                    <X size={22} />
+                  </motion.button>
+                </div>
+
+                <ul className="flex flex-col gap-3">
+                  {navLinks.map((link, index) => (
+                    <motion.li
+                      key={link.href}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.08 }}
                     >
-                      {t(link.key)}
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
+                      <a
+                        href={link.href}
+                        className={`group relative flex items-center gap-3 p-3 text-xl font-medium rounded-xl transition-all duration-200 ${
+                          activeSection === link.href.slice(1)
+                            ? "text-foreground bg-accent-primary/10"
+                            : "text-foreground-muted hover:text-foreground hover:bg-accent-primary/5"
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <span className="flex-1">{t(link.key)}</span>
+                        <motion.span
+                          className="w-1.5 h-1.5 rounded-full bg-accent-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                          layoutId="mobile-indicator"
+                        />
+                      </a>
+                    </motion.li>
+                  ))}
+                </ul>
 
-              <div className="mt-auto">
-                {/* Mobile Controls */}
-                <div className="flex items-center gap-3 mb-6">
-                  <button
-                    onClick={toggleLocale}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg"
-                  >
-                    <Globe size={16} />
-                    <span className="uppercase font-medium">{locale}</span>
-                  </button>
-                  <button
-                    onClick={toggleTheme}
-                    className="p-2 text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg"
-                  >
-                    {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-                  </button>
-                </div>
+                <div className="mt-auto space-y-6">
+                  {/* Mobile Controls */}
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-background-secondary/50">
+                    <button
+                      onClick={toggleLocale}
+                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-foreground-muted hover:text-foreground rounded-lg hover:bg-accent-primary/5 transition-colors"
+                    >
+                      <Globe size={16} />
+                      <span className="uppercase">{locale}</span>
+                    </button>
+                    <motion.button
+                      onClick={toggleTheme}
+                      className="p-2 text-foreground-muted hover:text-foreground rounded-lg hover:bg-accent-primary/5 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                    </motion.button>
+                  </div>
 
-                <div className="flex items-center gap-6">
-                  <a
-                    href="https://github.com/huynhkhandev-cloud"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-foreground-muted hover:text-accent-primary transition-colors"
-                  >
-                    <GithubIcon size={24} />
-                  </a>
-                  <a
-                    href="https://linkedin.com/in/khanhhuynh"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-foreground-muted hover:text-accent-primary transition-colors"
-                  >
-                    <LinkedinIcon size={24} />
-                  </a>
-                  <a
-                    href="mailto:kh@example.com"
-                    className="text-foreground-muted hover:text-accent-primary transition-colors"
-                  >
-                    <Mail size={24} />
-                  </a>
+                  <div className="flex items-center gap-4">
+                    <motion.a
+                      href="https://github.com/huynhkhandev-cloud"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3 text-foreground-muted hover:text-foreground rounded-xl hover:bg-accent-primary/5 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <GithubIcon size={24} />
+                    </motion.a>
+                    <motion.a
+                      href="https://linkedin.com/in/khanhhuynh"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-3 text-foreground-muted hover:text-foreground rounded-xl hover:bg-accent-primary/5 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <LinkedinIcon size={24} />
+                    </motion.a>
+                    <motion.a
+                      href="mailto:kh@example.com"
+                      className="p-3 text-foreground-muted hover:text-foreground rounded-xl hover:bg-accent-primary/5 transition-colors"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                    >
+                      <Mail size={24} />
+                    </motion.a>
+                  </div>
                 </div>
               </div>
-            </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
