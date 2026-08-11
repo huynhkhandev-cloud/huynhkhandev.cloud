@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion } from "framer-motion";
-import { ChevronDown, ArrowRight, ExternalLink } from "lucide-react";
+import { ChevronDown, ArrowRight, ExternalLink, ZoomIn, ZoomOut, Move } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
 const frameworks = [
@@ -57,13 +57,11 @@ interface LogoItemProps {
 function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
   const [hovered, setHovered] = useState(false);
   const groupRef = useRef<THREE.Group>(null);
-  const { camera } = useThree();
+  const { camera, gl } = useThree();
 
   const iconUrl = `https://icon.horse/icon/${new URL(framework.link).hostname}`;
 
-  // Dragging state
   const [isDragging, setIsDragging] = useState(false);
-  const dragOffset = useRef({ x: 0, y: 0 });
   const currentPos = useRef({ x: position[0], y: position[1] });
 
   const handlePointerDown = (e: any) => {
@@ -77,7 +75,6 @@ function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
     document.body.style.cursor = "auto";
   };
 
-  // Use useFrame to update position while dragging
   useFrame(() => {
     if (isDragging && groupRef.current) {
       groupRef.current.position.x = currentPos.current.x;
@@ -85,7 +82,7 @@ function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
     }
   });
 
-  const handleMouseMove = (e: MouseEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent) => {
     if (isDragging && groupRef.current) {
       const rect = gl.domElement.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -100,36 +97,26 @@ function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
       currentPos.current.x = pos.x;
       currentPos.current.y = pos.y;
     }
-  };
+  }, [isDragging, camera, gl]);
 
-  // Add event listeners to window
-  React.useEffect(() => {
+  useEffect(() => {
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handlePointerUp);
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handlePointerUp);
     };
-  }, []);
-
-  const { gl } = useThree();
+  }, [handleMouseMove]);
 
   return (
-    <group
-      ref={groupRef}
-      position={position}
-    >
-      <Html
-        center
-        transform={false}
-        zIndexRange={[10, 0]}
-      >
+    <group ref={groupRef} position={position}>
+      <Html center transform={false} zIndexRange={[10, 0]}>
         <div
           onMouseDown={handlePointerDown}
           onMouseEnter={() => {
             setHovered(true);
             onHover();
-            document.body.style.cursor = "grab";
+            if (!isDragging) document.body.style.cursor = "grab";
           }}
           onMouseLeave={() => {
             setHovered(false);
@@ -162,17 +149,7 @@ function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
             padding: "12px",
             transition: "all 0.3s ease",
           }}>
-            <img
-              src={iconUrl}
-              alt={framework.name}
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                pointerEvents: "none",
-              }}
-            />
+            <img src={iconUrl} alt={framework.name} draggable={false} style={{ width: "100%", height: "100%", objectFit: "contain", pointerEvents: "none" }} />
           </div>
           <span style={{
             fontSize: "11px",
@@ -198,9 +175,80 @@ function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
   );
 }
 
-function Scene({ onFrameworkHover, onFrameworkLeave }: {
+function CameraController({ isPanning, setIsPanning }: { isPanning: boolean; setIsPanning: (v: boolean) => void }) {
+  const { camera, gl } = useThree();
+  const [dragging, setDragging] = useState(false);
+  const lastMouse = useRef({ x: 0, y: 0 });
+  const panOffset = useRef({ x: 0, y: 0 });
+
+  const handleMouseDown = (e: React.PointerEvent) => {
+    if (!isPanning) return;
+    setDragging(true);
+    lastMouse.current = { x: e.clientX, y: e.clientY };
+    document.body.style.cursor = "grabbing";
+  };
+
+  const handleMouseUp = () => {
+    setDragging(false);
+    document.body.style.cursor = isPanning ? "grab" : "auto";
+  };
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragging || !isPanning) return;
+    
+    const deltaX = (e.clientX - lastMouse.current.x) * 0.01;
+    const deltaY = (e.clientY - lastMouse.current.y) * 0.01;
+    
+    panOffset.current.x -= deltaX;
+    panOffset.current.y += deltaY;
+    
+    camera.position.x = panOffset.current.x;
+    camera.position.y = panOffset.current.y;
+    
+    lastMouse.current = { x: e.clientX, y: e.clientY };
+  }, [dragging, isPanning, camera]);
+
+  useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [handleMouseMove]);
+
+  useEffect(() => {
+    if (isPanning) {
+      document.body.style.cursor = "grab";
+    } else {
+      document.body.style.cursor = "auto";
+    }
+  }, [isPanning]);
+
+  return (
+    <Html fullscreen zIndexRange={[0, -1]} onPointerDown={handleMouseDown}>
+      <div style={{ width: '100vw', height: '100vh' }} />
+    </Html>
+  );
+}
+
+function ZoomController({ zoom, setZoom }: { zoom: number; setZoom: (v: number) => void }) {
+  const { camera } = useThree();
+
+  useEffect(() => {
+    camera.position.z = 15 / zoom;
+  }, [zoom, camera]);
+
+  return null;
+}
+
+function Scene({ onFrameworkHover, onFrameworkLeave, isPanning, setIsPanning, zoom, setZoom }: {
   onFrameworkHover: (fw: typeof frameworks[0] | null) => void;
   onFrameworkLeave: () => void;
+  isPanning: boolean;
+  setIsPanning: (v: boolean) => void;
+  zoom: number;
+  setZoom: (v: number) => void;
 }) {
   const positions = useMemo<[number, number, number][]>(() => {
     const result: [number, number, number][] = [];
@@ -235,6 +283,8 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
       <pointLight position={[0, 5, 10]} intensity={1} color="#ffffff" />
       <pointLight position={[-8, -3, 5]} intensity={0.5} color="#aaccff" />
       <Stars />
+      <CameraController isPanning={isPanning} setIsPanning={setIsPanning} />
+      <ZoomController zoom={zoom} setZoom={setZoom} />
 
       {frameworks.map((fw, i) => (
         <LogoItem
@@ -273,22 +323,13 @@ function FrameworkInfoPanel({ framework }: { framework: typeof frameworks[0] | n
           overflow: "hidden",
           padding: "10px",
         }}>
-          <img
-            src={`https://icon.horse/icon/${new URL(framework.link).hostname}`}
-            alt={framework.name}
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
-          />
+          <img src={`https://icon.horse/icon/${new URL(framework.link).hostname}`} alt={framework.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </div>
         <div className="pr-4">
           <p className="font-bold text-foreground text-lg">{framework.name}</p>
           <p className="text-sm text-foreground-muted">{framework.desc}</p>
         </div>
-        <a
-          href={framework.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 px-4 py-2 bg-accent-primary text-white font-medium rounded-xl hover:opacity-90 transition-all text-sm"
-        >
+        <a href={framework.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-accent-primary text-white font-medium rounded-xl hover:opacity-90 transition-all text-sm">
           <ExternalLink size={16} />
           Truy cập
         </a>
@@ -297,9 +338,39 @@ function FrameworkInfoPanel({ framework }: { framework: typeof frameworks[0] | n
   );
 }
 
+function ZoomControls({ zoom, setZoom, isPanning, setIsPanning }: { zoom: number; setZoom: (v: number) => void; isPanning: boolean; setIsPanning: (v: boolean) => void }) {
+  return (
+    <div className="absolute top-6 right-6 flex flex-col gap-2 z-30">
+      <button
+        onClick={() => setZoom(Math.min(zoom * 1.3, 3))}
+        className="w-10 h-10 rounded-xl backdrop-blur-xl bg-background/50 border border-white/15 flex items-center justify-center text-foreground-muted hover:text-foreground hover:border-white/25 transition-all"
+        title="Phóng to"
+      >
+        <ZoomIn size={18} />
+      </button>
+      <button
+        onClick={() => setZoom(Math.max(zoom / 1.3, 0.5))}
+        className="w-10 h-10 rounded-xl backdrop-blur-xl bg-background/50 border border-white/15 flex items-center justify-center text-foreground-muted hover:text-foreground hover:border-white/25 transition-all"
+        title="Thu nhỏ"
+      >
+        <ZoomOut size={18} />
+      </button>
+      <button
+        onClick={() => setIsPanning(!isPanning)}
+        className={`w-10 h-10 rounded-xl backdrop-blur-xl bg-background/50 border flex items-center justify-center transition-all ${isPanning ? "border-accent-primary text-accent-primary" : "border-white/15 text-foreground-muted hover:text-foreground hover:border-white/25"}`}
+        title="Di chuyển canvas"
+      >
+        <Move size={18} />
+      </button>
+    </div>
+  );
+}
+
 export default function Hero() {
   const { t } = useI18n();
   const [hoveredFramework, setHoveredFramework] = useState<typeof frameworks[0] | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [isPanning, setIsPanning] = useState(false);
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -309,6 +380,10 @@ export default function Hero() {
           <Scene
             onFrameworkHover={setHoveredFramework}
             onFrameworkLeave={() => setHoveredFramework(null)}
+            isPanning={isPanning}
+            setIsPanning={setIsPanning}
+            zoom={zoom}
+            setZoom={setZoom}
           />
         </Canvas>
       </div>
@@ -316,6 +391,9 @@ export default function Hero() {
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 50%, var(--background) 100%)" }} />
+
+      {/* Zoom Controls */}
+      <ZoomControls zoom={zoom} setZoom={setZoom} isPanning={isPanning} setIsPanning={setIsPanning} />
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 text-center relative z-10 pointer-events-none">
@@ -347,24 +425,18 @@ export default function Hero() {
         </motion.p>
       </div>
 
-      {/* CTA Buttons - Bottom of section */}
+      {/* CTA Buttons */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.9 }}
         className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col sm:flex-row items-center gap-4 z-20"
       >
-        <a
-          href="#projects"
-          className="group px-8 py-4 bg-foreground text-background font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center gap-2"
-        >
+        <a href="#projects" className="group px-8 py-4 bg-foreground text-background font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center gap-2">
           Xem Dự án
           <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
         </a>
-        <a
-          href="#contact"
-          className="px-8 py-4 border border-border text-foreground-muted font-medium rounded-xl hover:text-foreground hover:border-accent-primary transition-all duration-300"
-        >
+        <a href="#contact" className="px-8 py-4 border border-border text-foreground-muted font-medium rounded-xl hover:text-foreground hover:border-accent-primary transition-all duration-300">
           Liên hệ ngay
         </a>
       </motion.div>
@@ -375,23 +447,13 @@ export default function Hero() {
         transition={{ delay: 1.2 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
       >
-        <motion.div
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-foreground-muted"
-        >
+        <motion.div animate={{ y: [0, 10, 0] }} transition={{ duration: 1.5, repeat: Infinity }} className="text-foreground-muted">
           <ChevronDown size={32} />
         </motion.div>
       </motion.div>
 
       {/* Framework Info Panel */}
       <FrameworkInfoPanel framework={hoveredFramework} />
-
-      {/* Hint */}
-      <div className="absolute top-24 right-6 text-xs text-foreground-muted/60 pointer-events-none flex items-center gap-2">
-        <span className="w-2 h-2 bg-accent-primary rounded-full animate-pulse" />
-        Kéo thả logo để sắp xếp
-      </div>
     </section>
   );
 }
