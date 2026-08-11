@@ -24,11 +24,12 @@ const translations = {
     hero: {
       title: "Huỳnh Văn Chí Khan",
       roles: {
+        fullstack: "Fullstack Developer",
         backend: "Backend Developer",
         data: "Data Engineer",
         bi: "BI Specialist",
       },
-      tagline: "Xây dựng hệ thống mở rộng, insight có ý nghĩa.",
+      tagline: "Xây dựng hệ thống mở rộng, tối ưu hiệu suất & mang lại trải nghiệm người dùng xuất sắc.",
       viewProjects: "Xem Dự án",
       contactMe: "Liên hệ ngay",
     },
@@ -88,11 +89,12 @@ const translations = {
     hero: {
       title: "Huynh Van Chi Khan",
       roles: {
+        fullstack: "Fullstack Developer",
         backend: "Backend Developer",
         data: "Data Engineer",
         bi: "BI Specialist",
       },
-      tagline: "Building systems that scale, insight that matters.",
+      tagline: "Building scalable systems, optimizing performance & delivering exceptional user experiences.",
       viewProjects: "View Projects",
       contactMe: "Contact Me",
     },

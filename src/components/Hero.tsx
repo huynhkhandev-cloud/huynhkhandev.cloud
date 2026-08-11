@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useRef, useState, useMemo, useCallback } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion } from "framer-motion";
-import { ChevronDown, ArrowRight } from "lucide-react";
+import { ChevronDown, ArrowRight, ExternalLink } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
 const frameworks = [
@@ -47,86 +47,104 @@ function Stars() {
   );
 }
 
-function LogoItem({ framework, position, onHover, onLeave }: {
+interface LogoItemProps {
   framework: typeof frameworks[0];
   position: [number, number, number];
   onHover: () => void;
   onLeave: () => void;
-}) {
+}
+
+function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
   const [hovered, setHovered] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const meshRef = useRef<THREE.Mesh>(null);
-  const { camera, gl } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
+  const { camera } = useThree();
 
   const iconUrl = `https://icon.horse/icon/${new URL(framework.link).hostname}`;
 
+  // Dragging state
+  const [isDragging, setIsDragging] = useState(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const currentPos = useRef({ x: position[0], y: position[1] });
+
   const handlePointerDown = (e: any) => {
     e.stopPropagation();
-    setDragging(true);
+    setIsDragging(true);
     document.body.style.cursor = "grabbing";
   };
 
   const handlePointerUp = () => {
-    setDragging(false);
+    setIsDragging(false);
     document.body.style.cursor = "auto";
   };
 
-  const handlePointerMove = (e: any) => {
-    if (dragging && meshRef.current) {
-      e.stopPropagation();
-      // Convert screen movement to world space
-      const x = (e.clientX / window.innerWidth) * 2 - 1;
-      const y = -(e.clientY / window.innerHeight) * 2 + 1;
-      const vector = new THREE.Vector3(x, y, 0.5).unproject(camera);
+  // Use useFrame to update position while dragging
+  useFrame(() => {
+    if (isDragging && groupRef.current) {
+      groupRef.current.position.x = currentPos.current.x;
+      groupRef.current.position.y = currentPos.current.y;
+    }
+  });
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (isDragging && groupRef.current) {
+      const rect = gl.domElement.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      
+      const vector = new THREE.Vector3(x, y, 0.5);
+      vector.unproject(camera);
       const dir = vector.sub(camera.position).normalize();
       const distance = -camera.position.z / dir.z;
       const pos = camera.position.clone().add(dir.multiplyScalar(distance));
-      meshRef.current.position.x = pos.x;
-      meshRef.current.position.y = pos.y;
+      
+      currentPos.current.x = pos.x;
+      currentPos.current.y = pos.y;
     }
   };
 
+  // Add event listeners to window
+  React.useEffect(() => {
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handlePointerUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handlePointerUp);
+    };
+  }, []);
+
+  const { gl } = useThree();
+
   return (
-    <>
-      <mesh ref={meshRef} position={position} visible={false}>
-        <planeGeometry args={[0.001, 0.001]} />
-      </mesh>
+    <group
+      ref={groupRef}
+      position={position}
+    >
       <Html
-        position={position}
         center
         transform={false}
         zIndexRange={[10, 0]}
       >
         <div
           onMouseDown={handlePointerDown}
-          onMouseUp={handlePointerUp}
-          onMouseMove={handlePointerMove}
           onMouseEnter={() => {
-            if (!dragging) {
-              setHovered(true);
-              onHover();
-              document.body.style.cursor = "grab";
-            }
+            setHovered(true);
+            onHover();
+            document.body.style.cursor = "grab";
           }}
           onMouseLeave={() => {
             setHovered(false);
             onLeave();
             document.body.style.cursor = "auto";
           }}
-          onClick={() => {
-            if (!dragging) {
-              window.open(framework.link, "_blank");
-            }
-          }}
           style={{
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
             gap: "10px",
-            transition: dragging ? "none" : "all 0.3s ease",
-            transform: hovered ? "scale(1.15)" : "scale(1)",
+            transform: hovered && !isDragging ? "scale(1.15)" : "scale(1)",
             userSelect: "none",
-            cursor: dragging ? "grabbing" : "grab",
+            cursor: isDragging ? "grabbing" : "grab",
+            transition: isDragging ? "none" : "transform 0.3s ease",
           }}
         >
           <div style={{
@@ -142,7 +160,7 @@ function LogoItem({ framework, position, onHover, onLeave }: {
             boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.3)" : "0 4px 16px rgba(0,0,0,0.2)",
             overflow: "hidden",
             padding: "12px",
-            transition: dragging ? "none" : "all 0.3s ease",
+            transition: "all 0.3s ease",
           }}>
             <img
               src={iconUrl}
@@ -176,7 +194,7 @@ function LogoItem({ framework, position, onHover, onLeave }: {
           </span>
         </div>
       </Html>
-    </>
+    </group>
   );
 }
 
@@ -185,17 +203,14 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
   onFrameworkLeave: () => void;
 }) {
   const positions = useMemo<[number, number, number][]>(() => {
-    // Random scatter across full screen
     const result: [number, number, number][] = [];
     const usedPositions: [number, number][] = [];
-
     const minDistance = 4;
 
     frameworks.forEach(() => {
       let attempts = 0;
       let pos: [number, number] = [0, 0];
       while (attempts < 100) {
-        // Random position in world units (camera at z=15, fov=50)
         const x = (Math.random() - 0.5) * 24;
         const y = (Math.random() - 0.5) * 14;
         const tooClose = usedPositions.some(
@@ -234,32 +249,51 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
   );
 }
 
-function FrameworkIcon({ framework }: { framework: typeof frameworks[0] }) {
-  const iconUrl = `https://icon.horse/icon/${new URL(framework.link).hostname}`;
+function FrameworkInfoPanel({ framework }: { framework: typeof frameworks[0] | null }) {
+  if (!framework) return null;
+
   return (
-    <div style={{
-      width: 56,
-      height: 56,
-      borderRadius: "14px",
-      background: "rgba(255,255,255,0.1)",
-      backdropFilter: "blur(12px)",
-      border: "1px solid rgba(255,255,255,0.15)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      overflow: "hidden",
-      padding: "10px",
-    }}>
-      <img
-        src={iconUrl}
-        alt={framework.name}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-        }}
-      />
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50"
+    >
+      <div className="px-6 py-5 rounded-2xl backdrop-blur-xl border border-white/15 shadow-2xl bg-background/85 flex items-center gap-5">
+        <div style={{
+          width: 60,
+          height: 60,
+          borderRadius: "14px",
+          background: "rgba(255,255,255,0.1)",
+          backdropFilter: "blur(12px)",
+          border: "1px solid rgba(255,255,255,0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          padding: "10px",
+        }}>
+          <img
+            src={`https://icon.horse/icon/${new URL(framework.link).hostname}`}
+            alt={framework.name}
+            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+          />
+        </div>
+        <div className="pr-4">
+          <p className="font-bold text-foreground text-lg">{framework.name}</p>
+          <p className="text-sm text-foreground-muted">{framework.desc}</p>
+        </div>
+        <a
+          href={framework.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 px-4 py-2 bg-accent-primary text-white font-medium rounded-xl hover:opacity-90 transition-all text-sm"
+        >
+          <ExternalLink size={16} />
+          Truy cập
+        </a>
+      </div>
+    </motion.div>
   );
 }
 
@@ -298,77 +332,65 @@ export default function Hero() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
-          className="text-xl md:text-3xl lg:text-4xl font-semibold text-foreground-muted mb-6"
+          className="text-xl md:text-3xl lg:text-4xl font-semibold text-foreground-muted mb-8"
         >
-          {t("hero.roles.backend")}
+          {t("hero.roles.fullstack")}
         </motion.div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto mb-12"
+          transition={{ delay: 0.5 }}
+          className="text-lg md:text-xl text-foreground-muted max-w-2xl mx-auto"
         >
           {t("hero.tagline")}
         </motion.p>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto"
-        >
-          <a
-            href="#projects"
-            className="group px-8 py-4 bg-foreground text-background font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center gap-2"
-          >
-            {t("hero.viewProjects")}
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </a>
-          <a
-            href="#contact"
-            className="px-8 py-4 border border-border text-foreground-muted font-medium rounded-xl hover:text-foreground hover:border-accent-primary transition-all duration-300"
-          >
-            {t("hero.contactMe")}
-          </a>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2"
-        >
-          <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="text-foreground-muted"
-          >
-            <ChevronDown size={32} />
-          </motion.div>
-        </motion.div>
       </div>
 
-      {/* Framework Info Panel */}
+      {/* CTA Buttons - Bottom of section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: hoveredFramework ? 1 : 0, y: hoveredFramework ? 0 : 20 }}
-        className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+        className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col sm:flex-row items-center gap-4 z-20"
       >
-        {hoveredFramework && (
-          <div className="px-6 py-4 rounded-2xl backdrop-blur-xl border border-white/15 shadow-2xl bg-background/85 flex items-center gap-4">
-            <FrameworkIcon framework={hoveredFramework} />
-            <div>
-              <p className="font-bold text-foreground text-lg">{hoveredFramework.name}</p>
-              <p className="text-sm text-foreground-muted">{hoveredFramework.desc}</p>
-            </div>
-          </div>
-        )}
+        <a
+          href="#projects"
+          className="group px-8 py-4 bg-foreground text-background font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center gap-2"
+        >
+          Xem Dự án
+          <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+        </a>
+        <a
+          href="#contact"
+          className="px-8 py-4 border border-border text-foreground-muted font-medium rounded-xl hover:text-foreground hover:border-accent-primary transition-all duration-300"
+        >
+          Liên hệ ngay
+        </a>
       </motion.div>
 
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.2 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+      >
+        <motion.div
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className="text-foreground-muted"
+        >
+          <ChevronDown size={32} />
+        </motion.div>
+      </motion.div>
+
+      {/* Framework Info Panel */}
+      <FrameworkInfoPanel framework={hoveredFramework} />
+
       {/* Hint */}
-      <div className="absolute top-24 right-6 text-xs text-foreground-muted/60 pointer-events-none">
-        <p>💡 Kéo thả logo để sắp xếp</p>
+      <div className="absolute top-24 right-6 text-xs text-foreground-muted/60 pointer-events-none flex items-center gap-2">
+        <span className="w-2 h-2 bg-accent-primary rounded-full animate-pulse" />
+        Kéo thả logo để sắp xếp
       </div>
     </section>
   );
