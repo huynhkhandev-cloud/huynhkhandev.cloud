@@ -1,15 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
+const frameworks = [
+  { name: "Next.js", icon: "N", color: "#ffffff", link: "https://nextjs.org", desc: "React Framework" },
+  { name: "Node.js", icon: "JS", color: "#68A063", link: "https://nodejs.org", desc: "JavaScript Runtime" },
+  { name: "PostgreSQL", icon: "PG", color: "#336791", link: "https://postgresql.org", desc: "Database" },
+  { name: "Redis", icon: "R", color: "#DC382D", link: "https://redis.io", desc: "In-Memory Cache" },
+  { name: "Docker", icon: "D", color: "#2496ED", link: "https://docker.com", desc: "Container Platform" },
+  { name: "AWS", icon: "AWS", color: "#FF9900", link: "https://aws.amazon.com", desc: "Cloud Platform" },
+  { name: "TypeScript", icon: "TS", color: "#3178C6", link: "https://typescriptlang.org", desc: "Type Safety" },
+  { name: "Python", icon: "PY", color: "#3776AB", link: "https://python.org", desc: "Backend Language" },
+  { name: "GraphQL", icon: "GQL", color: "#E10098", link: "https://graphql.org", desc: "API Query Language" },
+  { name: "MongoDB", icon: "M", color: "#47A248", link: "https://mongodb.com", desc: "NoSQL Database" },
+  { name: "Kubernetes", icon: "K8", color: "#326CE5", link: "https://kubernetes.io", desc: "Container Orchestration" },
+  { name: "Go", icon: "GO", color: "#00ADD8", link: "https://go.dev", desc: "Backend Language" },
+];
+
 export default function Hero() {
   const { t } = useI18n();
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [displayedTitle, setDisplayedTitle] = useState("");
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const roles = [
     t("hero.roles.backend"),
@@ -42,29 +59,89 @@ export default function Hero() {
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent-primary/5 rounded-full blur-3xl animate-float" />
-        <div
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent-secondary/5 rounded-full blur-3xl animate-float"
-          style={{ animationDelay: "1.5s" }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.02] dark:opacity-[0.03]"
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, var(--foreground) 1px, transparent 0)`,
-            backgroundSize: "40px 40px",
-          }}
-        />
+      {/* Framework Logos Background */}
+      <div ref={containerRef} className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Grid Background */}
+        <div className="absolute inset-0 bg-framework-grid opacity-30" />
+
+        {/* Ambient Glows */}
+        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-accent-primary/5 to-transparent rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-tl from-accent-secondary/5 to-transparent rounded-full blur-3xl" />
+
+        {frameworks.map((fw, i) => {
+          const row = Math.floor(i / 4);
+          const col = i % 4;
+          const baseX = 8 + col * 24;
+          const baseY = 12 + row * 30;
+          const isHovered = hoveredIndex === i;
+
+          return (
+            <motion.a
+              key={fw.name}
+              href={fw.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute pointer-events-auto"
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: isHovered ? 0.9 : 0.08,
+                scale: isHovered ? 1.2 : 1,
+                x: baseX,
+                y: baseY,
+              }}
+              whileHover={{ scale: 1.15, opacity: 0.5 }}
+              transition={{
+                opacity: { duration: 0.4 },
+                scale: { duration: 0.3 },
+                x: { duration: 0.6, delay: i * 0.05 },
+                y: { duration: 0.6, delay: i * 0.05 },
+              }}
+              onHoverStart={() => setHoveredIndex(i)}
+              onHoverEnd={() => setHoveredIndex(null)}
+            >
+              <div className="flex flex-col items-center gap-2 group">
+                <div
+                  className="relative w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-sm transition-all duration-300 backdrop-blur-sm"
+                  style={{
+                    background: `linear-gradient(135deg, ${fw.color}22, ${fw.color}11)`,
+                    border: `1px solid ${fw.color}33`,
+                    boxShadow: isHovered ? `0 0 30px ${fw.color}40, inset 0 0 20px ${fw.color}20` : "none",
+                  }}
+                >
+                  <span style={{ color: fw.color }}>{fw.icon}</span>
+
+                  {/* Tooltip */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 5 }}
+                    className="absolute -bottom-12 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap pointer-events-none"
+                    style={{
+                      background: "var(--background)",
+                      border: "1px solid var(--border)",
+                      color: "var(--foreground)",
+                    }}
+                  >
+                    {fw.desc}
+                  </motion.div>
+                </div>
+              </div>
+            </motion.a>
+          );
+        })}
       </div>
 
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-background pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-background pointer-events-none" />
+
+      {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
         {/* Name */}
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 text-foreground"
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="text-4xl md:text-6xl lg:text-7xl font-bold mb-3 text-foreground"
         >
           {t("hero.title")}
         </motion.h1>
@@ -101,17 +178,14 @@ export default function Hero() {
         >
           <a
             href="#projects"
-            className="group px-8 py-4 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-all duration-300 animate-pulse-glow flex items-center gap-2"
+            className="group px-8 py-4 bg-foreground text-background font-semibold rounded-xl hover:opacity-90 transition-all duration-300 flex items-center gap-2"
           >
             {t("hero.viewProjects")}
-            <ArrowRight
-              size={18}
-              className="group-hover:translate-x-1 transition-transform"
-            />
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </a>
           <a
             href="#contact"
-            className="px-8 py-4 border border-border text-foreground-muted font-medium rounded-lg hover:text-foreground hover:border-accent-primary transition-all duration-300"
+            className="px-8 py-4 border border-border text-foreground-muted font-medium rounded-xl hover:text-foreground hover:border-accent-primary transition-all duration-300"
           >
             {t("hero.contactMe")}
           </a>

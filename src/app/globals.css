@@ -156,3 +156,11 @@ code, pre {
   0%, 100% { box-shadow: 0 0 20px rgba(0, 0, 0, 0.05); }
   50% { box-shadow: 0 0 40px rgba(0, 0, 0, 0.1); }
 }
+
+/* Framework Grid Background */
+.bg-framework-grid {
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0);
+  background-size: 80px 80px;
+  opacity: 0.3;
+}
