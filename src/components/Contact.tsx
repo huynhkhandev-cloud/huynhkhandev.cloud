@@ -4,29 +4,28 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Send, Check, Copy } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "./ui/Icons";
+import { useI18n } from "@/contexts/I18nContext";
 
 const socialLinks = [
   {
     name: "GitHub",
     icon: <GithubIcon size={24} />,
     url: "https://github.com/huynhkhandev-cloud",
-    color: "hover:text-white",
   },
   {
     name: "LinkedIn",
     icon: <LinkedinIcon size={24} />,
     url: "https://linkedin.com/in/khanhhuynh",
-    color: "hover:text-blue-400",
   },
   {
     name: "Email",
     icon: <Mail size={24} />,
     url: "mailto:kh@example.com",
-    color: "hover:text-accent-primary",
   },
 ];
 
 export default function Contact() {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const handleCopyEmail = async () => {
@@ -46,12 +45,10 @@ export default function Contact() {
           transition={{ duration: 0.6 }}
           className="mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Get In Touch</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full mx-auto mb-6" />
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">{t("contact.title")}</h2>
+          <div className="w-20 h-1 bg-foreground rounded-full mx-auto mb-6" />
           <p className="text-foreground-muted max-w-xl mx-auto">
-            I&apos;m currently open to new opportunities and collaborations.
-            Whether you have a question or just want to say hi, I&apos;ll try my
-            best to get back to you!
+            {t("contact.description")}
           </p>
         </motion.div>
 
@@ -65,17 +62,17 @@ export default function Contact() {
         >
           {/* Email */}
           <div className="mb-8">
-            <p className="text-sm text-foreground-muted mb-2">Email me at</p>
+            <p className="text-sm text-foreground-muted mb-2">{t("contact.emailMe")}</p>
             <div className="flex items-center justify-center gap-3">
               <a
                 href="mailto:kh@example.com"
-                className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent"
+                className="text-xl md:text-2xl font-semibold text-foreground"
               >
                 kh@example.com
               </a>
               <button
                 onClick={handleCopyEmail}
-                className="p-2 text-foreground-muted hover:text-accent-primary transition-colors"
+                className="p-2 text-foreground-muted hover:text-foreground transition-colors"
                 title="Copy email"
               >
                 {copied ? (
@@ -90,7 +87,7 @@ export default function Contact() {
           {/* Divider */}
           <div className="flex items-center gap-4 mb-8">
             <div className="flex-1 h-px bg-border" />
-            <span className="text-foreground-muted text-sm">or find me on</span>
+            <span className="text-foreground-muted text-sm">{t("contact.orFindMe")}</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
@@ -102,7 +99,7 @@ export default function Contact() {
                 href={link.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`p-4 text-foreground-muted ${link.color} transition-all duration-300 hover:bg-background-accent rounded-xl border border-border hover:border-accent-primary/30`}
+                className="p-4 text-foreground-muted hover:text-foreground transition-all duration-300 hover:bg-background-accent rounded-xl border border-border hover:border-foreground/20"
                 title={link.name}
               >
                 {link.icon}
@@ -115,10 +112,10 @@ export default function Contact() {
             href="mailto:kh@example.com"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-gradient-to-r from-accent-primary to-accent-secondary text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
           >
             <Send size={18} />
-            Send Message
+            {t("contact.sendMessage")}
           </motion.a>
         </motion.div>
 
@@ -130,7 +127,7 @@ export default function Contact() {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 bg-success text-background rounded-lg text-sm font-medium"
           >
-            Email copied to clipboard!
+            {t("contact.emailCopied")}
           </motion.div>
         )}
       </div>

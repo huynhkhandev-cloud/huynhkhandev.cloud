@@ -1,7 +1,11 @@
+"use client";
+
 import { Mail, ArrowUp } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "./ui/Icons";
+import { useI18n } from "@/contexts/I18nContext";
 
 export default function Footer() {
+  const { t } = useI18n();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -10,7 +14,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Copyright */}
           <p className="text-sm text-foreground-muted">
-            © {currentYear} Huỳnh Văn Chí Khánh. All rights reserved.
+            © {currentYear} Huỳnh Văn Chí Khánh. {t("footer.rights")}
           </p>
 
           {/* Social Links */}
@@ -19,7 +23,7 @@ export default function Footer() {
               href="https://github.com/huynhkhandev-cloud"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground-muted hover:text-accent-primary transition-colors"
+              className="text-foreground-muted hover:text-foreground transition-colors"
             >
               <GithubIcon size={18} />
             </a>
@@ -27,13 +31,13 @@ export default function Footer() {
               href="https://linkedin.com/in/khanhhuynh"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-foreground-muted hover:text-accent-primary transition-colors"
+              className="text-foreground-muted hover:text-foreground transition-colors"
             >
               <LinkedinIcon size={18} />
             </a>
             <a
               href="mailto:kh@example.com"
-              className="text-foreground-muted hover:text-accent-primary transition-colors"
+              className="text-foreground-muted hover:text-foreground transition-colors"
             >
               <Mail size={18} />
             </a>
@@ -42,16 +46,16 @@ export default function Footer() {
           {/* Back to Top */}
           <a
             href="#"
-            className="flex items-center gap-2 text-sm text-foreground-muted hover:text-accent-primary transition-colors"
+            className="flex items-center gap-2 text-sm text-foreground-muted hover:text-foreground transition-colors"
           >
-            Back to top
+            {t("footer.backToTop")}
             <ArrowUp size={16} />
           </a>
         </div>
 
         {/* Built with */}
         <p className="mt-6 text-center text-xs text-foreground-muted/60">
-          Built with Next.js, Tailwind CSS, and Framer Motion
+          {t("footer.builtWith")}
         </p>
       </div>
     </footer>

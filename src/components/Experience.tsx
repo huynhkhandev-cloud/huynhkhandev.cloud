@@ -12,6 +12,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { experience } from "@/lib/content";
+import { useI18n } from "@/contexts/I18nContext";
 
 const iconMap: Record<string, React.ReactNode> = {
   Database: <Database size={24} />,
@@ -25,6 +26,8 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export default function Experience() {
+  const { t } = useI18n();
+
   return (
     <section id="experience" className="py-20 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
@@ -36,10 +39,10 @@ export default function Experience() {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Work Experience
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
+            {t("experience.title")}
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" />
+          <div className="w-20 h-1 bg-foreground rounded-full" />
         </motion.div>
 
         {/* Timeline */}
@@ -59,19 +62,19 @@ export default function Experience() {
               }`}
             >
               {/* Timeline Node */}
-              <div className="absolute left-0 md:left-1/2 w-4 h-4 bg-accent-primary rounded-full border-4 border-background md:-translate-x-1/2 -translate-y-1 z-10">
-                <div className="absolute inset-0 bg-accent-primary rounded-full animate-ping opacity-50" />
+              <div className="absolute left-0 md:left-1/2 w-4 h-4 bg-foreground rounded-full border-4 border-background md:-translate-x-1/2 -translate-y-1 z-10">
+                <div className="absolute inset-0 bg-foreground rounded-full animate-ping opacity-50" />
               </div>
 
               {/* Content */}
               <div className={`flex-1 ml-8 md:ml-0 ${index % 2 === 0 ? "md:pr-12" : "md:pl-12"}`}>
-                <div className="p-6 bg-background-secondary rounded-2xl border border-border hover:border-accent-primary/30 transition-colors">
+                <div className="p-6 bg-background-secondary rounded-2xl border border-border hover:border-foreground/20 transition-colors">
                   {/* Header */}
                   <div className="mb-4">
-                    <span className="inline-block px-3 py-1 text-xs bg-accent-primary/10 text-accent-primary rounded-full mb-2">
+                    <span className="inline-block px-3 py-1 text-xs bg-foreground/5 text-foreground rounded-full mb-2">
                       {exp.period}
                     </span>
-                    <h3 className="text-xl font-bold mb-1">{exp.role}</h3>
+                    <h3 className="text-xl font-bold mb-1 text-foreground">{exp.role}</h3>
                     <p className="text-foreground-muted">{exp.company}</p>
                   </div>
 
@@ -82,7 +85,7 @@ export default function Experience() {
                         key={i}
                         className="flex items-start gap-3 text-sm text-foreground-muted"
                       >
-                        <span className="mt-1.5 w-1.5 h-1.5 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full flex-shrink-0" />
+                        <span className="mt-1.5 w-1.5 h-1.5 bg-foreground rounded-full flex-shrink-0" />
                         {highlight}
                       </li>
                     ))}

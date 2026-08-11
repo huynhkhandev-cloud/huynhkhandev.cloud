@@ -13,9 +13,11 @@ import {
 } from "lucide-react";
 import { GithubIcon } from "./ui/Icons";
 import { projects, Project } from "@/lib/content";
+import { useI18n } from "@/contexts/I18nContext";
 
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { t } = useI18n();
 
   return (
     <motion.div
@@ -23,7 +25,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-background-secondary rounded-2xl border border-border overflow-hidden hover:border-accent-primary/30 transition-all duration-300 group"
+      className="bg-background-secondary rounded-2xl border border-border overflow-hidden hover:border-foreground/20 transition-all duration-300 group"
     >
       {/* Card Header */}
       <button
@@ -32,18 +34,18 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       >
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="text-xl font-bold group-hover:text-accent-primary transition-colors">
+            <h3 className="text-xl font-bold group-hover:text-foreground transition-colors text-foreground">
               {project.title}
             </h3>
             {project.isPrivate ? (
               <span className="flex items-center gap-1 px-2 py-1 text-xs bg-background-accent rounded-full text-foreground-muted">
                 <Lock size={12} />
-                Private
+                {t("projects.private")}
               </span>
             ) : (
               <span className="flex items-center gap-1 px-2 py-1 text-xs bg-success/10 rounded-full text-success">
                 <CheckCircle2 size={12} />
-                Public
+                {t("projects.public")}
               </span>
             )}
           </div>
@@ -92,7 +94,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               </div>
 
               {/* Period */}
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent-primary/10 rounded-full text-accent-primary text-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-foreground/5 rounded-full text-foreground text-sm">
                 <Zap size={14} />
                 {project.period}
               </div>
@@ -100,8 +102,8 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               {/* Highlights */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Code2 size={16} className="text-accent-primary" />
-                  <h4 className="font-semibold">Key Features</h4>
+                  <Code2 size={16} className="text-foreground" />
+                  <h4 className="font-semibold text-foreground">{t("projects.keyFeatures")}</h4>
                 </div>
                 <ul className="space-y-2">
                   {project.highlights.map((highlight, i) => (
@@ -109,7 +111,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                       key={i}
                       className="flex items-start gap-3 text-sm text-foreground-muted"
                     >
-                      <span className="mt-1.5 w-1.5 h-1.5 bg-accent-primary rounded-full flex-shrink-0" />
+                      <span className="mt-1.5 w-1.5 h-1.5 bg-foreground rounded-full flex-shrink-0" />
                       {highlight}
                     </li>
                   ))}
@@ -122,7 +124,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                   <div className="p-4 bg-background-accent rounded-lg">
                     <div className="flex items-center gap-2 mb-3">
                       <Lightbulb size={16} className="text-foreground-muted" />
-                      <h4 className="font-semibold text-sm">Challenges</h4>
+                      <h4 className="font-semibold text-foreground text-sm">{t("projects.challenges")}</h4>
                     </div>
                     <ul className="space-y-2">
                       {project.challenges.map((challenge, i) => (
@@ -130,7 +132,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                           key={i}
                           className="text-sm text-foreground-muted flex items-start gap-2"
                         >
-                          <span className="text-accent-secondary">•</span>
+                          <span className="text-foreground">•</span>
                           {challenge}
                         </li>
                       ))}
@@ -142,7 +144,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                         size={16}
                         className="text-success"
                       />
-                      <h4 className="font-semibold text-sm">Solutions</h4>
+                      <h4 className="font-semibold text-foreground text-sm">{t("projects.solutions")}</h4>
                     </div>
                     <ul className="space-y-2">
                       {project.solutions!.map((solution, i) => (
@@ -161,7 +163,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 
               {/* Tech Stack Full */}
               <div>
-                <h4 className="font-semibold mb-3">Tech Stack</h4>
+                <h4 className="font-semibold text-foreground mb-3">{t("projects.techStack")}</h4>
                 <div className="flex flex-wrap gap-2">
                   {project.techStack.map((tech) => (
                     <span
@@ -181,10 +183,10 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-background-accent rounded-lg text-sm text-foreground-muted hover:text-accent-primary hover:border-accent-primary border border-border transition-all"
+                    className="flex items-center gap-2 px-4 py-2 bg-background-accent rounded-lg text-sm text-foreground-muted hover:text-foreground hover:border-foreground/20 border border-border transition-all"
                   >
                     <GithubIcon size={16} />
-                    View Source
+                    {t("projects.viewSource")}
                   </a>
                 )}
                 {project.demoUrl && (
@@ -192,10 +194,10 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-lg text-sm text-background font-medium hover:opacity-90 transition-opacity"
+                    className="flex items-center gap-2 px-4 py-2 bg-foreground rounded-lg text-sm text-background font-medium hover:opacity-90 transition-opacity"
                   >
                     <ExternalLink size={16} />
-                    Live Demo
+                    {t("projects.liveDemo")}
                   </a>
                 )}
               </div>
@@ -208,6 +210,8 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 }
 
 export default function Projects() {
+  const { t } = useI18n();
+
   return (
     <section id="projects" className="py-20 md:py-32 bg-background-secondary/50">
       <div className="max-w-6xl mx-auto px-6">
@@ -219,11 +223,10 @@ export default function Projects() {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Projects</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" />
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">{t("projects.title")}</h2>
+          <div className="w-20 h-1 bg-foreground rounded-full" />
           <p className="mt-4 text-foreground-muted max-w-2xl">
-            A selection of projects showcasing my expertise in backend development,
-            data engineering, and automation.
+            {t("projects.subtitle")}
           </p>
         </motion.div>
 

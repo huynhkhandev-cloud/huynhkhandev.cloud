@@ -2,20 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Mail } from "lucide-react";
+import { Menu, X, Mail, Sun, Moon, Globe } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "./ui/Icons";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useI18n, Locale } from "@/contexts/I18nContext";
 
 const navLinks = [
-  { href: "#about", label: "About" },
-  { href: "#projects", label: "Projects" },
-  { href: "#experience", label: "Experience" },
-  { href: "#contact", label: "Contact" },
+  { href: "#about", key: "nav.about" },
+  { href: "#projects", key: "nav.projects" },
+  { href: "#experience", key: "nav.experience" },
+  { href: "#contact", key: "nav.contact" },
 ];
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("");
+  const { theme, toggleTheme } = useTheme();
+  const { locale, setLocale, t } = useI18n();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,6 +43,10 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const toggleLocale = () => {
+    setLocale(locale === "vi" ? "en" : "vi");
+  };
+
   return (
     <>
       <motion.header
@@ -54,7 +62,7 @@ export default function Header() {
         <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <a
             href="#"
-            className="text-xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent"
+            className="text-xl font-bold text-foreground"
           >
             KH
           </a>
@@ -71,39 +79,61 @@ export default function Header() {
                       : "text-foreground-muted"
                   }`}
                 >
-                  {link.label}
+                  {t(link.key)}
                 </a>
               </li>
             ))}
           </ul>
 
-          {/* Social Links */}
-          <div className="hidden md:flex items-center gap-4">
-            <a
-              href="https://github.com/huynhkhandev-cloud"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground-muted hover:text-accent-primary transition-colors"
+          {/* Controls */}
+          <div className="flex items-center gap-3">
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLocale}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg hover:border-accent-primary/30"
+              title={locale === "vi" ? "Switch to English" : "Chuyển sang Tiếng Việt"}
             >
-              <GithubIcon size={20} />
-            </a>
-            <a
-              href="https://linkedin.com/in/khanhhuynh"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-foreground-muted hover:text-accent-primary transition-colors"
-            >
-              <LinkedinIcon size={20} />
-            </a>
-          </div>
+              <Globe size={16} />
+              <span className="uppercase font-medium">{locale}</span>
+            </button>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-foreground-muted hover:text-accent-primary"
-            onClick={() => setIsMobileMenuOpen(true)}
-          >
-            <Menu size={24} />
-          </button>
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg hover:border-accent-primary/30"
+              title={theme === "dark" ? t("theme.light") : t("theme.dark")}
+            >
+              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+
+            {/* Social Links */}
+            <div className="hidden md:flex items-center gap-3">
+              <a
+                href="https://github.com/huynhkhandev-cloud"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground-muted hover:text-accent-primary transition-colors"
+              >
+                <GithubIcon size={20} />
+              </a>
+              <a
+                href="https://linkedin.com/in/khanhhuynh"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-foreground-muted hover:text-accent-primary transition-colors"
+              >
+                <LinkedinIcon size={20} />
+              </a>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden text-foreground-muted hover:text-foreground"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </nav>
       </motion.header>
 
@@ -118,11 +148,9 @@ export default function Header() {
           >
             <div className="flex flex-col h-full p-6">
               <div className="flex items-center justify-between mb-12">
-                <span className="text-xl font-bold bg-gradient-to-r from-accent-primary to-accent-secondary bg-clip-text text-transparent">
-                  KH
-                </span>
+                <span className="text-xl font-bold text-foreground">KH</span>
                 <button
-                  className="text-foreground-muted hover:text-accent-primary"
+                  className="text-foreground-muted hover:text-foreground"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <X size={24} />
@@ -142,35 +170,54 @@ export default function Header() {
                       className="text-2xl font-medium text-foreground-muted hover:text-accent-primary transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
-                      {link.label}
+                      {t(link.key)}
                     </a>
                   </motion.li>
                 ))}
               </ul>
 
-              <div className="mt-auto flex items-center gap-6">
-                <a
-                  href="https://github.com/huynhkhandev-cloud"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground-muted hover:text-accent-primary transition-colors"
-                >
-                  <GithubIcon size={24} />
-                </a>
-                <a
-                  href="https://linkedin.com/in/khanhhuynh"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-foreground-muted hover:text-accent-primary transition-colors"
-                >
-                  <LinkedinIcon size={24} />
-                </a>
-                <a
-                  href="mailto:kh@example.com"
-                  className="text-foreground-muted hover:text-accent-primary transition-colors"
-                >
-                  <Mail size={24} />
-                </a>
+              <div className="mt-auto">
+                {/* Mobile Controls */}
+                <div className="flex items-center gap-3 mb-6">
+                  <button
+                    onClick={toggleLocale}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg"
+                  >
+                    <Globe size={16} />
+                    <span className="uppercase font-medium">{locale}</span>
+                  </button>
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 text-foreground-muted hover:text-foreground transition-colors border border-border rounded-lg"
+                  >
+                    {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-6">
+                  <a
+                    href="https://github.com/huynhkhandev-cloud"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground-muted hover:text-accent-primary transition-colors"
+                  >
+                    <GithubIcon size={24} />
+                  </a>
+                  <a
+                    href="https://linkedin.com/in/khanhhuynh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-foreground-muted hover:text-accent-primary transition-colors"
+                  >
+                    <LinkedinIcon size={24} />
+                  </a>
+                  <a
+                    href="mailto:kh@example.com"
+                    className="text-foreground-muted hover:text-accent-primary transition-colors"
+                  >
+                    <Mail size={24} />
+                  </a>
+                </div>
               </div>
             </div>
           </motion.div>

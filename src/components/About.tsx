@@ -12,6 +12,7 @@ import {
   Layers,
 } from "lucide-react";
 import { skills, aboutText } from "@/lib/content";
+import { useI18n } from "@/contexts/I18nContext";
 
 const iconMap: Record<string, React.ReactNode> = {
   Server: <Server size={20} />,
@@ -22,6 +23,8 @@ const iconMap: Record<string, React.ReactNode> = {
 };
 
 export default function About() {
+  const { t } = useI18n();
+
   return (
     <section id="about" className="py-20 md:py-32">
       <div className="max-w-6xl mx-auto px-6">
@@ -33,8 +36,8 @@ export default function About() {
           transition={{ duration: 0.6 }}
           className="mb-16"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">About Me</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-accent-primary to-accent-secondary rounded-full" />
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">{t("about.title")}</h2>
+          <div className="w-20 h-1 bg-foreground rounded-full" />
         </motion.div>
 
         {/* Content Grid */}
@@ -54,41 +57,41 @@ export default function About() {
             <div className="mt-8 grid grid-cols-2 gap-4">
               <div className="p-4 bg-background-secondary rounded-lg border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-accent-primary/10 rounded-lg text-accent-primary">
+                  <div className="p-2 bg-foreground/5 rounded-lg text-foreground">
                     <Code2 size={20} />
                   </div>
                   <span className="text-sm text-foreground-muted">
-                    Backend Focus
+                    {t("about.stats.backend")}
                   </span>
                 </div>
               </div>
               <div className="p-4 bg-background-secondary rounded-lg border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-accent-secondary/10 rounded-lg text-accent-secondary">
+                  <div className="p-2 bg-foreground/5 rounded-lg text-foreground">
                     <Layers size={20} />
                   </div>
                   <span className="text-sm text-foreground-muted">
-                    Full Stack
+                    {t("about.stats.fullstack")}
                   </span>
                 </div>
               </div>
               <div className="p-4 bg-background-secondary rounded-lg border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-success/10 rounded-lg text-success">
+                  <div className="p-2 bg-foreground/5 rounded-lg text-foreground">
                     <BarChart3 size={20} />
                   </div>
                   <span className="text-sm text-foreground-muted">
-                    Data Driven
+                    {t("about.stats.dataDriven")}
                   </span>
                 </div>
               </div>
               <div className="p-4 bg-background-secondary rounded-lg border border-border">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-accent-primary/10 rounded-lg text-accent-primary">
+                  <div className="p-2 bg-foreground/5 rounded-lg text-foreground">
                     <Terminal size={20} />
                   </div>
                   <span className="text-sm text-foreground-muted">
-                    Automation
+                    {t("about.stats.automation")}
                   </span>
                 </div>
               </div>
@@ -110,19 +113,19 @@ export default function About() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 * index }}
-                className="p-5 bg-background-secondary rounded-xl border border-border hover:border-accent-primary/30 transition-colors"
+                className="p-5 bg-background-secondary rounded-xl border border-border hover:border-foreground/20 transition-colors"
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="p-2 bg-gradient-to-br from-accent-primary/20 to-accent-secondary/20 rounded-lg text-accent-primary">
+                  <div className="p-2 bg-foreground/5 rounded-lg text-foreground">
                     {iconMap[skill.icon] || <Server size={20} />}
                   </div>
-                  <h3 className="font-semibold">{skill.category}</h3>
+                  <h3 className="font-semibold text-foreground">{skill.category}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {skill.items.map((item) => (
                     <span
                       key={item}
-                      className="px-3 py-1 text-sm bg-background-accent rounded-full text-foreground-muted hover:text-accent-primary transition-colors"
+                      className="px-3 py-1 text-sm bg-background-accent rounded-full text-foreground-muted hover:text-foreground transition-colors"
                     >
                       {item}
                     </span>
