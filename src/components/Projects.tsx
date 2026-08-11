@@ -29,7 +29,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
     >
       {/* Card Header */}
       <button
-        onClick={() => setIsExpanded(!isExpanded)}
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          setIsExpanded(!isExpanded);
+        }}
         className="w-full p-6 text-left flex items-start justify-between gap-4"
       >
         <div className="flex-1">
@@ -183,6 +187,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="flex items-center gap-2 px-4 py-2 bg-background-accent rounded-lg text-sm text-foreground-muted hover:text-foreground hover:border-foreground/20 border border-border transition-all"
                   >
                     <GithubIcon size={16} />
@@ -194,6 +199,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="flex items-center gap-2 px-4 py-2 bg-foreground rounded-lg text-sm text-background font-medium hover:opacity-90 transition-opacity"
                   >
                     <ExternalLink size={16} />
