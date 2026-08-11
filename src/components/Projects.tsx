@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useRef } from "react";
+import { motion, AnimatePresence, useInView } from "framer-motion";
 import {
   ChevronDown,
   ExternalLink,
@@ -18,23 +18,22 @@ import { useI18n } from "@/contexts/I18nContext";
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { t } = useI18n();
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-50px" });
 
   return (
     <motion.div
+      ref={ref}
       initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
       className="bg-background-secondary rounded-2xl border border-border overflow-hidden hover:border-foreground/20 transition-all duration-300 group"
     >
       {/* Card Header */}
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          setIsExpanded(!isExpanded);
-        }}
-        className="w-full p-6 text-left flex items-start justify-between gap-4"
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full p-6 text-left flex items-start justify-between gap-4 cursor-pointer"
       >
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
@@ -80,14 +79,14 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       </button>
 
       {/* Expanded Content */}
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            style={{ overflow: "hidden" }}
           >
             <div className="px-6 pb-6 border-t border-border pt-6 space-y-6">
               {/* Description */}
@@ -187,7 +186,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     href={project.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
                     className="flex items-center gap-2 px-4 py-2 bg-background-accent rounded-lg text-sm text-foreground-muted hover:text-foreground hover:border-foreground/20 border border-border transition-all"
                   >
                     <GithubIcon size={16} />
@@ -199,7 +197,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                     href={project.demoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
                     className="flex items-center gap-2 px-4 py-2 bg-foreground rounded-lg text-sm text-background font-medium hover:opacity-90 transition-opacity"
                   >
                     <ExternalLink size={16} />
