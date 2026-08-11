@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Copyright */}
           <p className="text-sm text-foreground-muted">
-            © {currentYear} Huỳnh Văn Chí Khánh. {t("footer.rights")}
+            © {currentYear} Huỳnh Văn Chí Khan. {t("footer.rights")}
           </p>
 
           {/* Social Links */}

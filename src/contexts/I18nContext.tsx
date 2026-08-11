@@ -22,7 +22,7 @@ const translations = {
       contact: "Liên hệ",
     },
     hero: {
-      title: "Huỳnh Văn Chí Khánh",
+      title: "Huỳnh Văn Chí Khan",
       roles: {
         backend: "Backend Developer",
         data: "Data Engineer",
@@ -86,7 +86,7 @@ const translations = {
       contact: "Contact",
     },
     hero: {
-      title: "Huỳnh Văn Chí Khánh",
+      title: "Huynh Van Chi Khan",
       roles: {
         backend: "Backend Developer",
         data: "Data Engineer",
