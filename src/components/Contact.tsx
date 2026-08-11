@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Mail, Send, Check, Copy } from "lucide-react";
+import { Mail, Send, Check, Copy, Phone } from "lucide-react";
 import { GithubIcon, LinkedinIcon } from "./ui/Icons";
 import { useI18n } from "@/contexts/I18nContext";
+
+const EMAIL = "huynhkhan91@gmail.com";
+const PHONE = "0961800341";
+const LINKEDIN = "https://www.linkedin.com/in/huynh-khan-09139826a/";
 
 const socialLinks = [
   {
@@ -15,28 +19,39 @@ const socialLinks = [
   {
     name: "LinkedIn",
     icon: <LinkedinIcon size={24} />,
-    url: "https://linkedin.com/in/khanhhuynh",
+    url: LINKEDIN,
   },
   {
     name: "Email",
     icon: <Mail size={24} />,
-    url: "mailto:kh@example.com",
+    url: `mailto:${EMAIL}`,
   },
 ];
 
 export default function Contact() {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const handleCopyEmail = async () => {
-    await navigator.clipboard.writeText("kh@example.com");
+  const handleCopy = async (text: string, field: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedField(field);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => {
+      setCopied(false);
+      setCopiedField(null);
+    }, 2000);
   };
 
   return (
-    <section id="contact" className="py-20 md:py-32 bg-background-secondary/50">
-      <div className="max-w-4xl mx-auto px-6 text-center">
+    <section id="contact" className="min-h-screen flex items-center justify-center relative overflow-hidden">
+      {/* Three.js Canvas (reuse background) */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="w-full h-full bg-gradient-to-b from-background/70 via-background/40 to-background" />
+      </div>
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 40%, var(--background) 100%)" }} />
+
+      <div className="max-w-4xl mx-auto px-6 text-center relative z-10 py-20 md:py-32">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
@@ -58,24 +73,48 @@ export default function Contact() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="p-8 md:p-12 bg-background-secondary rounded-2xl border border-border"
+          className="p-8 md:p-12 bg-background-secondary/80 backdrop-blur-sm rounded-2xl border border-border"
         >
           {/* Email */}
-          <div className="mb-8">
+          <div className="mb-6">
             <p className="text-sm text-foreground-muted mb-2">{t("contact.emailMe")}</p>
             <div className="flex items-center justify-center gap-3">
               <a
-                href="mailto:kh@example.com"
+                href={`mailto:${EMAIL}`}
                 className="text-xl md:text-2xl font-semibold text-foreground"
               >
-                kh@example.com
+                {EMAIL}
               </a>
               <button
-                onClick={handleCopyEmail}
+                onClick={() => handleCopy(EMAIL, "email")}
                 className="p-2 text-foreground-muted hover:text-foreground transition-colors"
                 title="Copy email"
               >
-                {copied ? (
+                {copied && copiedField === "email" ? (
+                  <Check size={20} className="text-success" />
+                ) : (
+                  <Copy size={20} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Phone */}
+          <div className="mb-8">
+            <p className="text-sm text-foreground-muted mb-2">Điện thoại</p>
+            <div className="flex items-center justify-center gap-3">
+              <a
+                href={`tel:${PHONE}`}
+                className="text-xl md:text-2xl font-semibold text-foreground"
+              >
+                {PHONE}
+              </a>
+              <button
+                onClick={() => handleCopy(PHONE, "phone")}
+                className="p-2 text-foreground-muted hover:text-foreground transition-colors"
+                title="Copy phone"
+              >
+                {copied && copiedField === "phone" ? (
                   <Check size={20} className="text-success" />
                 ) : (
                   <Copy size={20} />
@@ -109,7 +148,7 @@ export default function Contact() {
 
           {/* CTA Button */}
           <motion.a
-            href="mailto:kh@example.com"
+            href={`mailto:${EMAIL}`}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-foreground text-background font-semibold rounded-lg hover:opacity-90 transition-opacity"
@@ -118,19 +157,19 @@ export default function Contact() {
             {t("contact.sendMessage")}
           </motion.a>
         </motion.div>
-
-        {/* Toast Notification */}
-        {copied && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 bg-success text-background rounded-lg text-sm font-medium"
-          >
-            {t("contact.emailCopied")}
-          </motion.div>
-        )}
       </div>
+
+      {/* Toast Notification */}
+      {copied && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 bg-success text-background rounded-lg text-sm font-medium z-50"
+        >
+          {copiedField === "email" ? "Đã copy email!" : "Đã copy số điện thoại!"}
+        </motion.div>
+      )}
     </section>
   );
 }
