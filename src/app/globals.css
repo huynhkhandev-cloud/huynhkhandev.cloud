@@ -30,27 +30,23 @@
 
 /* Liquid Glass Variables - Apple Liquid Glass Style */
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.9);
-  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.07);
-  --glass-highlight: rgba(255, 255, 255, 1);
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.85);
   --glass-blur: 28px;
-  --glass-depth: inset 0 1px 1px rgba(255, 255, 255, 0.9), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --glass-3d: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
-  --tab-active-bg: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.08) 100%);
-  --tab-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --glass-3d: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --tab-indicator-bg: linear-gradient(180deg, rgba(0, 0, 0, 0.06) 0%, rgba(0, 0, 0, 0.04) 100%);
+  --tab-indicator-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --tab-indicator-border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 [data-theme="dark"] {
   --glass-bg: rgba(28, 28, 30, 0.78);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-  --glass-highlight: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.08);
   --glass-blur: 30px;
-  --glass-depth: inset 0 1px 1px rgba(255, 255, 255, 0.08);
-  --glass-3d: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  --tab-active-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
-  --tab-active-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --glass-3d: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --tab-indicator-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --tab-indicator-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.25);
+  --tab-indicator-border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Liquid Glass Effect Class */
