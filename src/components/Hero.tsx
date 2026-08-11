@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion } from "framer-motion";
-import { ChevronDown, ArrowRight, ExternalLink, ZoomIn, ZoomOut, Move } from "lucide-react";
+import { ChevronDown, ArrowRight, ExternalLink } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
 const frameworks = [
@@ -175,29 +175,33 @@ function LogoItem({ framework, position, onHover, onLeave }: LogoItemProps) {
   );
 }
 
-function CameraController({ isPanning, setIsPanning }: { isPanning: boolean; setIsPanning: (v: boolean) => void }) {
+function CameraController() {
   const { camera, gl } = useThree();
   const [dragging, setDragging] = useState(false);
   const lastMouse = useRef({ x: 0, y: 0 });
   const panOffset = useRef({ x: 0, y: 0 });
+  const zoomRef = useRef(1);
 
-  const handleMouseDown = (e: React.PointerEvent) => {
-    if (!isPanning) return;
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const target = e.target as HTMLElement;
+    // Skip if clicking on logo (logo has pointer-events)
+    if (target.closest('[data-logo-item]')) return;
+    
     setDragging(true);
     lastMouse.current = { x: e.clientX, y: e.clientY };
     document.body.style.cursor = "grabbing";
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setDragging(false);
-    document.body.style.cursor = isPanning ? "grab" : "auto";
+    document.body.style.cursor = "auto";
   };
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragging || !isPanning) return;
+    if (!dragging) return;
     
-    const deltaX = (e.clientX - lastMouse.current.x) * 0.01;
-    const deltaY = (e.clientY - lastMouse.current.y) * 0.01;
+    const deltaX = (e.clientX - lastMouse.current.x) * 0.02;
+    const deltaY = (e.clientY - lastMouse.current.y) * 0.02;
     
     panOffset.current.x -= deltaX;
     panOffset.current.y += deltaY;
@@ -206,49 +210,46 @@ function CameraController({ isPanning, setIsPanning }: { isPanning: boolean; set
     camera.position.y = panOffset.current.y;
     
     lastMouse.current = { x: e.clientX, y: e.clientY };
-  }, [dragging, isPanning, camera]);
+  }, [dragging, camera]);
+
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+    const newZoom = Math.max(0.4, Math.min(3, zoomRef.current + delta));
+    zoomRef.current = newZoom;
+    
+    camera.position.z = 15 / newZoom;
+  }, [camera]);
 
   useEffect(() => {
+    const canvas = gl.domElement;
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('mouseup', handlePointerUp);
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('mouseup', handlePointerUp);
+      canvas.removeEventListener('wheel', handleWheel);
     };
-  }, [handleMouseMove]);
-
-  useEffect(() => {
-    if (isPanning) {
-      document.body.style.cursor = "grab";
-    } else {
-      document.body.style.cursor = "auto";
-    }
-  }, [isPanning]);
+  }, [handleMouseMove, handleWheel, gl]);
 
   return (
-    <Html fullscreen zIndexRange={[0, -1]} onPointerDown={handleMouseDown}>
-      <div style={{ width: '100vw', height: '100vh' }} />
+    <Html fullscreen zIndexRange={[0, -1]} pointerEvents="auto">
+      <div
+        onPointerDown={handlePointerDown}
+        style={{
+          width: '100vw',
+          height: '100vh',
+          cursor: dragging ? "grabbing" : "grab",
+        }}
+      />
     </Html>
   );
 }
 
-function ZoomController({ zoom, setZoom }: { zoom: number; setZoom: (v: number) => void }) {
-  const { camera } = useThree();
-
-  useEffect(() => {
-    camera.position.z = 15 / zoom;
-  }, [zoom, camera]);
-
-  return null;
-}
-
-function Scene({ onFrameworkHover, onFrameworkLeave, isPanning, setIsPanning, zoom, setZoom }: {
+function Scene({ onFrameworkHover, onFrameworkLeave }: {
   onFrameworkHover: (fw: typeof frameworks[0] | null) => void;
   onFrameworkLeave: () => void;
-  isPanning: boolean;
-  setIsPanning: (v: boolean) => void;
-  zoom: number;
-  setZoom: (v: number) => void;
 }) {
   const positions = useMemo<[number, number, number][]>(() => {
     const result: [number, number, number][] = [];
@@ -259,8 +260,8 @@ function Scene({ onFrameworkHover, onFrameworkLeave, isPanning, setIsPanning, zo
       let attempts = 0;
       let pos: [number, number] = [0, 0];
       while (attempts < 100) {
-        const x = (Math.random() - 0.5) * 24;
-        const y = (Math.random() - 0.5) * 14;
+        const x = (Math.random() - 0.5) * 30;
+        const y = (Math.random() - 0.5) * 18;
         const tooClose = usedPositions.some(
           ([ux, uy]) => Math.sqrt((ux - x) ** 2 + (uy - y) ** 2) < minDistance
         );
@@ -283,8 +284,7 @@ function Scene({ onFrameworkHover, onFrameworkLeave, isPanning, setIsPanning, zo
       <pointLight position={[0, 5, 10]} intensity={1} color="#ffffff" />
       <pointLight position={[-8, -3, 5]} intensity={0.5} color="#aaccff" />
       <Stars />
-      <CameraController isPanning={isPanning} setIsPanning={setIsPanning} />
-      <ZoomController zoom={zoom} setZoom={setZoom} />
+      <CameraController />
 
       {frameworks.map((fw, i) => (
         <LogoItem
@@ -338,39 +338,9 @@ function FrameworkInfoPanel({ framework }: { framework: typeof frameworks[0] | n
   );
 }
 
-function ZoomControls({ zoom, setZoom, isPanning, setIsPanning }: { zoom: number; setZoom: (v: number) => void; isPanning: boolean; setIsPanning: (v: boolean) => void }) {
-  return (
-    <div className="absolute top-6 right-6 flex flex-col gap-2 z-30">
-      <button
-        onClick={() => setZoom(Math.min(zoom * 1.3, 3))}
-        className="w-10 h-10 rounded-xl backdrop-blur-xl bg-background/50 border border-white/15 flex items-center justify-center text-foreground-muted hover:text-foreground hover:border-white/25 transition-all"
-        title="Phóng to"
-      >
-        <ZoomIn size={18} />
-      </button>
-      <button
-        onClick={() => setZoom(Math.max(zoom / 1.3, 0.5))}
-        className="w-10 h-10 rounded-xl backdrop-blur-xl bg-background/50 border border-white/15 flex items-center justify-center text-foreground-muted hover:text-foreground hover:border-white/25 transition-all"
-        title="Thu nhỏ"
-      >
-        <ZoomOut size={18} />
-      </button>
-      <button
-        onClick={() => setIsPanning(!isPanning)}
-        className={`w-10 h-10 rounded-xl backdrop-blur-xl bg-background/50 border flex items-center justify-center transition-all ${isPanning ? "border-accent-primary text-accent-primary" : "border-white/15 text-foreground-muted hover:text-foreground hover:border-white/25"}`}
-        title="Di chuyển canvas"
-      >
-        <Move size={18} />
-      </button>
-    </div>
-  );
-}
-
 export default function Hero() {
   const { t } = useI18n();
   const [hoveredFramework, setHoveredFramework] = useState<typeof frameworks[0] | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [isPanning, setIsPanning] = useState(false);
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
@@ -380,10 +350,6 @@ export default function Hero() {
           <Scene
             onFrameworkHover={setHoveredFramework}
             onFrameworkLeave={() => setHoveredFramework(null)}
-            isPanning={isPanning}
-            setIsPanning={setIsPanning}
-            zoom={zoom}
-            setZoom={setZoom}
           />
         </Canvas>
       </div>
@@ -391,9 +357,6 @@ export default function Hero() {
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background pointer-events-none" />
       <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 50%, var(--background) 100%)" }} />
-
-      {/* Zoom Controls */}
-      <ZoomControls zoom={zoom} setZoom={setZoom} isPanning={isPanning} setIsPanning={setIsPanning} />
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 text-center relative z-10 pointer-events-none">
