@@ -9,102 +9,18 @@ import { ChevronDown, ArrowRight } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
 const frameworks = [
-  {
-    name: "Next.js",
-    color: "#000000",
-    bgColor: "#ffffff",
-    link: "https://nextjs.org",
-    desc: "React Framework",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg",
-  },
-  {
-    name: "Spring Boot",
-    color: "#6DB33F",
-    bgColor: "#ffffff",
-    link: "https://spring.io/projects/spring-boot",
-    desc: "Java Framework",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/springboot/springboot-original.svg",
-  },
-  {
-    name: "Node.js",
-    color: "#339933",
-    bgColor: "#ffffff",
-    link: "https://nodejs.org",
-    desc: "JavaScript Runtime",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg",
-  },
-  {
-    name: "PostgreSQL",
-    color: "#336791",
-    bgColor: "#ffffff",
-    link: "https://postgresql.org",
-    desc: "Database",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg",
-  },
-  {
-    name: "Docker",
-    color: "#2496ED",
-    bgColor: "#ffffff",
-    link: "https://docker.com",
-    desc: "Container Platform",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg",
-  },
-  {
-    name: "Kubernetes",
-    color: "#326CE5",
-    bgColor: "#ffffff",
-    link: "https://kubernetes.io",
-    desc: "Container Orchestration",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kubernetes/kubernetes-original.svg",
-  },
-  {
-    name: "TypeScript",
-    color: "#3178C6",
-    bgColor: "#ffffff",
-    link: "https://typescriptlang.org",
-    desc: "Type Safety",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg",
-  },
-  {
-    name: "Python",
-    color: "#3776AB",
-    bgColor: "#ffffff",
-    link: "https://python.org",
-    desc: "Backend Language",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg",
-  },
-  {
-    name: "MongoDB",
-    color: "#47A248",
-    bgColor: "#ffffff",
-    link: "https://mongodb.com",
-    desc: "NoSQL Database",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg",
-  },
-  {
-    name: "AWS",
-    color: "#FF9900",
-    bgColor: "#ffffff",
-    link: "https://aws.amazon.com",
-    desc: "Cloud Platform",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original.svg",
-  },
-  {
-    name: "Redis",
-    color: "#DC382D",
-    bgColor: "#ffffff",
-    link: "https://redis.io",
-    desc: "In-Memory Cache",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redis/redis-original.svg",
-  },
-  {
-    name: "GraphQL",
-    color: "#E10098",
-    bgColor: "#ffffff",
-    link: "https://graphql.org",
-    desc: "API Query Language",
-    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/graphql/graphql-original.svg",
-  },
+  { name: "Next.js", link: "https://nextjs.org", desc: "React Framework" },
+  { name: "Spring Boot", link: "https://spring.io/projects/spring-boot", desc: "Java Framework" },
+  { name: "Node.js", link: "https://nodejs.org", desc: "JavaScript Runtime" },
+  { name: "PostgreSQL", link: "https://postgresql.org", desc: "Database" },
+  { name: "Docker", link: "https://docker.com", desc: "Container Platform" },
+  { name: "Kubernetes", link: "https://kubernetes.io", desc: "Container Orchestration" },
+  { name: "TypeScript", link: "https://typescriptlang.org", desc: "Type Safety" },
+  { name: "Python", link: "https://python.org", desc: "Backend Language" },
+  { name: "MongoDB", link: "https://mongodb.com", desc: "NoSQL Database" },
+  { name: "AWS", link: "https://aws.amazon.com", desc: "Cloud Platform" },
+  { name: "Redis", link: "https://redis.io", desc: "In-Memory Cache" },
+  { name: "GraphQL", link: "https://graphql.org", desc: "API Query Language" },
 ];
 
 function Stars() {
@@ -131,59 +47,20 @@ function Stars() {
   );
 }
 
-function IconLogo({ iconUrl, color, size = 80 }: { iconUrl: string; color: string; size?: number }) {
-  return (
-    <div style={{
-      width: size,
-      height: size,
-      borderRadius: "50%",
-      background: `linear-gradient(135deg, ${color}15, ${color}05)`,
-      border: `2px solid ${color}40`,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backdropFilter: "blur(8px)",
-      boxShadow: `0 8px 32px ${color}20`,
-    }}>
-      <img
-        src={iconUrl}
-        alt=""
-        style={{
-          width: size * 0.6,
-          height: size * 0.6,
-          objectFit: "contain",
-          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
-        }}
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = "none";
-        }}
-      />
-    </div>
-  );
-}
-
-function LogoPlanet({ framework, position, onHover, onLeave }: {
+function LogoItem({ framework, position, onHover, onLeave }: {
   framework: typeof frameworks[0];
   position: [number, number, number];
   onHover: () => void;
   onLeave: () => void;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  useFrame(() => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += 0.002;
-    }
-  });
-
-  const scale = hovered ? 1.15 : 1;
+  const iconUrl = `https://icon.horse/icon/${new URL(framework.link).hostname}`;
 
   return (
     <group
-      ref={groupRef}
       position={position}
-      scale={scale}
       onPointerOver={(e) => {
         e.stopPropagation();
         setHovered(true);
@@ -208,13 +85,38 @@ function LogoPlanet({ framework, position, onHover, onLeave }: {
           alignItems: "center",
           gap: "10px",
           transition: "all 0.3s ease",
+          transform: hovered ? "scale(1.1)" : "scale(1)",
         }}>
-          <IconLogo iconUrl={framework.iconUrl} color={framework.color} size={75} />
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: "16px",
+            background: "rgba(255,255,255,0.1)",
+            backdropFilter: "blur(12px)",
+            border: `1px solid ${hovered ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.15)"}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.3s ease",
+            boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.3)" : "0 4px 16px rgba(0,0,0,0.2)",
+            overflow: "hidden",
+            padding: "12px",
+          }}>
+            <img
+              src={iconUrl}
+              alt={framework.name}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+              }}
+            />
+          </div>
           <span style={{
             fontSize: "11px",
-            fontWeight: 700,
-            color: framework.color,
-            background: "rgba(0,0,0,0.85)",
+            fontWeight: 600,
+            color: "#ffffff",
+            background: "rgba(0,0,0,0.8)",
             padding: "5px 14px",
             borderRadius: "20px",
             backdropFilter: "blur(12px)",
@@ -222,8 +124,8 @@ function LogoPlanet({ framework, position, onHover, onLeave }: {
             opacity: hovered ? 1 : 0,
             transform: hovered ? "translateY(0)" : "translateY(-8px)",
             transition: "all 0.3s ease",
-            border: `1px solid ${framework.color}30`,
-            letterSpacing: "0.5px",
+            border: "1px solid rgba(255,255,255,0.1)",
+            letterSpacing: "0.3px",
           }}>
             {framework.name}
           </span>
@@ -237,8 +139,6 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
   onFrameworkHover: (fw: typeof frameworks[0] | null) => void;
   onFrameworkLeave: () => void;
 }) {
-  const { camera } = useThree();
-
   const positions = useMemo<[number, number, number][]>(() => {
     const result: [number, number, number][] = [];
     const cols = 4;
@@ -256,19 +156,15 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
     return result;
   }, []);
 
-  useFrame(() => {
-    camera.position.y = Math.sin(Date.now() * 0.0003) * 0.15;
-  });
-
   return (
     <>
-      <ambientLight intensity={0.7} />
-      <pointLight position={[0, 5, 10]} intensity={0.9} color="#ffffff" />
-      <pointLight position={[-8, -3, 5]} intensity={0.4} color="#aaccff" />
+      <ambientLight intensity={0.8} />
+      <pointLight position={[0, 5, 10]} intensity={1} color="#ffffff" />
+      <pointLight position={[-8, -3, 5]} intensity={0.5} color="#aaccff" />
       <Stars />
 
       {frameworks.map((fw, i) => (
-        <LogoPlanet
+        <LogoItem
           key={fw.name}
           framework={fw}
           position={positions[i]}
@@ -277,6 +173,35 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
         />
       ))}
     </>
+  );
+}
+
+function FrameworkIcon({ framework }: { framework: typeof frameworks[0] }) {
+  const iconUrl = `https://icon.horse/icon/${new URL(framework.link).hostname}`;
+  return (
+    <div style={{
+      width: 56,
+      height: 56,
+      borderRadius: "14px",
+      background: "rgba(255,255,255,0.1)",
+      backdropFilter: "blur(12px)",
+      border: "1px solid rgba(255,255,255,0.15)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      overflow: "hidden",
+      padding: "10px",
+    }}>
+      <img
+        src={iconUrl}
+        alt={framework.name}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain",
+        }}
+      />
+    </div>
   );
 }
 
@@ -374,7 +299,7 @@ export default function Hero() {
       >
         {hoveredFramework && (
           <div className="px-6 py-4 rounded-2xl backdrop-blur-xl border border-white/15 shadow-2xl bg-background/85 flex items-center gap-4">
-            <IconLogo iconUrl={hoveredFramework.iconUrl} color={hoveredFramework.color} size={56} />
+            <FrameworkIcon framework={hoveredFramework} />
             <div>
               <p className="font-bold text-foreground text-lg">{hoveredFramework.name}</p>
               <p className="text-sm text-foreground-muted">{hoveredFramework.desc}</p>
