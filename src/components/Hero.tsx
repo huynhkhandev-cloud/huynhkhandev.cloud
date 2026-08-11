@@ -1,33 +1,117 @@
 "use client";
 
-import { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Html, useTexture } from "@react-three/drei";
+import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion } from "framer-motion";
 import { ChevronDown, ArrowRight } from "lucide-react";
 import { useI18n } from "@/contexts/I18nContext";
 
 const frameworks = [
-  { name: "Next.js", color: "#ffffff", link: "https://nextjs.org", size: 1.4, desc: "React Framework", icon: "N" },
-  { name: "Node.js", color: "#339933", link: "https://nodejs.org", size: 1.3, desc: "JavaScript Runtime", icon: "JS" },
-  { name: "PostgreSQL", color: "#336791", link: "https://postgresql.org", size: 1.5, desc: "Database", icon: "PG" },
-  { name: "Redis", color: "#DC382D", link: "https://redis.io", size: 1.2, desc: "In-Memory Cache", icon: "R" },
-  { name: "Docker", color: "#2496ED", link: "https://docker.com", size: 1.5, desc: "Container Platform", icon: "D" },
-  { name: "AWS", color: "#FF9900", link: "https://aws.amazon.com", size: 1.4, desc: "Cloud Platform", icon: "AWS" },
-  { name: "TypeScript", color: "#3178C6", link: "https://typescriptlang.org", size: 1.3, desc: "Type Safety", icon: "TS" },
-  { name: "Python", color: "#3776AB", link: "https://python.org", size: 1.4, desc: "Backend Language", icon: "PY" },
-  { name: "MongoDB", color: "#47A248", link: "https://mongodb.com", size: 1.3, desc: "NoSQL Database", icon: "M" },
-  { name: "GraphQL", color: "#E10098", link: "https://graphql.org", size: 1.2, desc: "API Query Language", icon: "GQL" },
-  { name: "Kubernetes", color: "#326CE5", link: "https://kubernetes.io", size: 1.3, desc: "Container Orchestration", icon: "K8" },
-  { name: "Go", color: "#00ADD8", link: "https://go.dev", size: 1.2, desc: "Backend Language", icon: "GO" },
+  {
+    name: "Next.js",
+    color: "#000000",
+    bgColor: "#ffffff",
+    link: "https://nextjs.org",
+    desc: "React Framework",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nextjs/nextjs-original.svg",
+  },
+  {
+    name: "Spring Boot",
+    color: "#6DB33F",
+    bgColor: "#ffffff",
+    link: "https://spring.io/projects/spring-boot",
+    desc: "Java Framework",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/springboot/springboot-original.svg",
+  },
+  {
+    name: "Node.js",
+    color: "#339933",
+    bgColor: "#ffffff",
+    link: "https://nodejs.org",
+    desc: "JavaScript Runtime",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg",
+  },
+  {
+    name: "PostgreSQL",
+    color: "#336791",
+    bgColor: "#ffffff",
+    link: "https://postgresql.org",
+    desc: "Database",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg",
+  },
+  {
+    name: "Docker",
+    color: "#2496ED",
+    bgColor: "#ffffff",
+    link: "https://docker.com",
+    desc: "Container Platform",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg",
+  },
+  {
+    name: "Kubernetes",
+    color: "#326CE5",
+    bgColor: "#ffffff",
+    link: "https://kubernetes.io",
+    desc: "Container Orchestration",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/kubernetes/kubernetes-original.svg",
+  },
+  {
+    name: "TypeScript",
+    color: "#3178C6",
+    bgColor: "#ffffff",
+    link: "https://typescriptlang.org",
+    desc: "Type Safety",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg",
+  },
+  {
+    name: "Python",
+    color: "#3776AB",
+    bgColor: "#ffffff",
+    link: "https://python.org",
+    desc: "Backend Language",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg",
+  },
+  {
+    name: "MongoDB",
+    color: "#47A248",
+    bgColor: "#ffffff",
+    link: "https://mongodb.com",
+    desc: "NoSQL Database",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg",
+  },
+  {
+    name: "AWS",
+    color: "#FF9900",
+    bgColor: "#ffffff",
+    link: "https://aws.amazon.com",
+    desc: "Cloud Platform",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-original.svg",
+  },
+  {
+    name: "Redis",
+    color: "#DC382D",
+    bgColor: "#ffffff",
+    link: "https://redis.io",
+    desc: "In-Memory Cache",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/redis/redis-original.svg",
+  },
+  {
+    name: "GraphQL",
+    color: "#E10098",
+    bgColor: "#ffffff",
+    link: "https://graphql.org",
+    desc: "API Query Language",
+    iconUrl: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/graphql/graphql-original.svg",
+  },
 ];
 
 function Stars() {
   const points = useMemo(() => {
-    const positions = new Float32Array(2000 * 3);
-    for (let i = 0; i < 2000; i++) {
-      const radius = 50 + Math.random() * 60;
+    const positions = new Float32Array(1500 * 3);
+    for (let i = 0; i < 1500; i++) {
+      const radius = 30 + Math.random() * 40;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
       positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
@@ -42,107 +126,130 @@ function Stars() {
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[points, 3]} />
       </bufferGeometry>
-      <pointsMaterial size={0.12} color="#ffffff" transparent opacity={0.6} sizeAttenuation />
+      <pointsMaterial size={0.08} color="#ffffff" transparent opacity={0.5} sizeAttenuation />
     </points>
   );
 }
 
-function Planet({ framework, position, onHover, onLeave, isHovered }: {
+function IconLogo({ iconUrl, color, size = 80 }: { iconUrl: string; color: string; size?: number }) {
+  return (
+    <div style={{
+      width: size,
+      height: size,
+      borderRadius: "50%",
+      background: `linear-gradient(135deg, ${color}15, ${color}05)`,
+      border: `2px solid ${color}40`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      backdropFilter: "blur(8px)",
+      boxShadow: `0 8px 32px ${color}20`,
+    }}>
+      <img
+        src={iconUrl}
+        alt=""
+        style={{
+          width: size * 0.6,
+          height: size * 0.6,
+          objectFit: "contain",
+          filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.2))",
+        }}
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
+    </div>
+  );
+}
+
+function LogoPlanet({ framework, position, onHover, onLeave }: {
   framework: typeof frameworks[0];
   position: [number, number, number];
-  onHover: (fw: typeof framework | null) => void;
+  onHover: () => void;
   onLeave: () => void;
-  isHovered: boolean;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
 
   useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.005;
-      meshRef.current.rotation.x += 0.002;
+    if (groupRef.current) {
+      groupRef.current.rotation.y += 0.002;
     }
   });
 
+  const scale = hovered ? 1.15 : 1;
+
   return (
-    <group position={position}>
-      <mesh
-        ref={meshRef}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-          onHover(framework);
-          document.body.style.cursor = "pointer";
-        }}
-        onPointerOut={(e) => {
-          e.stopPropagation();
-          setHovered(false);
-          onLeave();
-          document.body.style.cursor = "auto";
-        }}
-        onClick={(e) => {
-          e.stopPropagation();
-          window.open(framework.link, "_blank");
-        }}
-        scale={hovered ? 1.3 : 1}
-      >
-        <sphereGeometry args={[framework.size * 0.5, 32, 32]} />
-        <meshStandardMaterial
-          color={framework.color}
-          emissive={framework.color}
-          emissiveIntensity={hovered ? 0.6 : 0.2}
-          roughness={0.2}
-          metalness={0.9}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-
-      {/* Glow */}
-      <mesh scale={hovered ? 1.4 : 1.2}>
-        <sphereGeometry args={[framework.size * 0.5, 32, 32]} />
-        <meshBasicMaterial
-          color={framework.color}
-          transparent
-          opacity={hovered ? 0.2 : 0.08}
-          side={THREE.BackSide}
-        />
-      </mesh>
-
-      {/* Label */}
-      <Html
-        center
-        position={[0, framework.size * 0.5 + 0.5, 0]}
-        style={{ opacity: hovered ? 1 : 0, transition: "opacity 0.3s" }}
-      >
-        <div className="px-2 py-1 rounded-md text-[10px] font-semibold whitespace-nowrap backdrop-blur-md bg-black/70 border border-white/20"
-          style={{ color: framework.color }}
-        >
-          {framework.icon}
+    <group
+      ref={groupRef}
+      position={position}
+      scale={scale}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+        onHover();
+        document.body.style.cursor = "pointer";
+      }}
+      onPointerOut={(e) => {
+        e.stopPropagation();
+        setHovered(false);
+        onLeave();
+        document.body.style.cursor = "auto";
+      }}
+      onClick={(e) => {
+        e.stopPropagation();
+        window.open(framework.link, "_blank");
+      }}
+    >
+      <Html center transform distanceFactor={5}>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "10px",
+          transition: "all 0.3s ease",
+        }}>
+          <IconLogo iconUrl={framework.iconUrl} color={framework.color} size={75} />
+          <span style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            color: framework.color,
+            background: "rgba(0,0,0,0.85)",
+            padding: "5px 14px",
+            borderRadius: "20px",
+            backdropFilter: "blur(12px)",
+            whiteSpace: "nowrap",
+            opacity: hovered ? 1 : 0,
+            transform: hovered ? "translateY(0)" : "translateY(-8px)",
+            transition: "all 0.3s ease",
+            border: `1px solid ${framework.color}30`,
+            letterSpacing: "0.5px",
+          }}>
+            {framework.name}
+          </span>
         </div>
       </Html>
     </group>
   );
 }
 
-function Scene({ onHover, onLeave, hoveredId }: {
-  onHover: (fw: typeof frameworks[0] | null) => void;
-  onLeave: () => void;
-  hoveredId: string | null;
+function Scene({ onFrameworkHover, onFrameworkLeave }: {
+  onFrameworkHover: (fw: typeof frameworks[0] | null) => void;
+  onFrameworkLeave: () => void;
 }) {
   const { camera } = useThree();
 
   const positions = useMemo<[number, number, number][]>(() => {
     const result: [number, number, number][] = [];
     const cols = 4;
-    const spacingX = 8;
-    const spacingY = 5;
+    const spacingX = 5;
+    const spacingY = 4;
 
     frameworks.forEach((_, i) => {
       const row = Math.floor(i / cols);
       const col = i % cols;
-      const x = (col - (cols - 1) / 2) * spacingX + (Math.random() - 0.5) * 2;
-      const y = ((cols - 1) / 2 - row) * spacingY + (Math.random() - 0.5) * 1.5;
+      const x = (col - (cols - 1) / 2) * spacingX;
+      const y = ((cols - 1) / 2 - row) * spacingY;
       result.push([x, y, 0]);
     });
 
@@ -150,70 +257,48 @@ function Scene({ onHover, onLeave, hoveredId }: {
   }, []);
 
   useFrame(() => {
-    camera.position.y = Math.sin(Date.now() * 0.0002) * 0.3 + 2;
+    camera.position.y = Math.sin(Date.now() * 0.0003) * 0.15;
   });
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <pointLight position={[0, 10, 10]} intensity={1} color="#ffffff" />
-      <pointLight position={[-10, -5, 5]} intensity={0.5} color="#8888ff" />
+      <ambientLight intensity={0.7} />
+      <pointLight position={[0, 5, 10]} intensity={0.9} color="#ffffff" />
+      <pointLight position={[-8, -3, 5]} intensity={0.4} color="#aaccff" />
       <Stars />
 
       {frameworks.map((fw, i) => (
-        <Planet
+        <LogoPlanet
           key={fw.name}
           framework={fw}
           position={positions[i]}
-          onHover={onHover}
-          onLeave={onLeave}
-          isHovered={hoveredId === fw.name}
+          onHover={() => onFrameworkHover(fw)}
+          onLeave={onFrameworkLeave}
         />
       ))}
     </>
   );
 }
 
-function FrameworkLogo({ icon, color, size = 40 }: { icon: string; color: string; size?: number }) {
-  return (
-    <svg viewBox="0 0 48 48" width={size} height={size}>
-      <circle cx="24" cy="24" r="22" fill={color} opacity={0.9} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
-      <text x="24" y="30" textAnchor="middle" fontFamily="Arial, sans-serif" fontWeight="bold" fontSize="14" fill="white">{icon}</text>
-    </svg>
-  );
-}
-
 export default function Hero() {
   const { t } = useI18n();
   const [hoveredFramework, setHoveredFramework] = useState<typeof frameworks[0] | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-
-  const handleHover = (fw: typeof frameworks[0] | null) => {
-    setHoveredFramework(fw);
-    setHoveredId(fw?.name || null);
-  };
-
-  const handleLeave = () => {
-    setHoveredFramework(null);
-    setHoveredId(null);
-  };
 
   return (
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Three.js Canvas */}
       <div className="absolute inset-0">
-        <Canvas camera={{ position: [0, 0, 18], fov: 55 }}>
+        <Canvas camera={{ position: [0, 0, 12], fov: 50 }}>
           <Scene
-            onHover={handleHover}
-            onLeave={handleLeave}
-            hoveredId={hoveredId}
+            onFrameworkHover={setHoveredFramework}
+            onFrameworkLeave={() => setHoveredFramework(null)}
           />
         </Canvas>
       </div>
 
       {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background pointer-events-none" />
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 30%, var(--background) 100%)" }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 40%, var(--background) 100%)" }} />
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
@@ -281,24 +366,18 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* Framework Info Tooltip */}
+      {/* Framework Info Panel */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: hoveredFramework ? 1 : 0, y: hoveredFramework ? 0 : 20 }}
-        className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+        className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
       >
         {hoveredFramework && (
-          <div className="px-6 py-4 rounded-2xl backdrop-blur-xl border border-white/10 shadow-2xl bg-background/80">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center"
-                style={{ background: `${hoveredFramework.color}15`, border: `1px solid ${hoveredFramework.color}40` }}
-              >
-                <FrameworkLogo icon={hoveredFramework.icon} color={hoveredFramework.color} size={44} />
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">{hoveredFramework.name}</p>
-                <p className="text-sm text-foreground-muted">{hoveredFramework.desc}</p>
-              </div>
+          <div className="px-6 py-4 rounded-2xl backdrop-blur-xl border border-white/15 shadow-2xl bg-background/85 flex items-center gap-4">
+            <IconLogo iconUrl={hoveredFramework.iconUrl} color={hoveredFramework.color} size={56} />
+            <div>
+              <p className="font-bold text-foreground text-lg">{hoveredFramework.name}</p>
+              <p className="text-sm text-foreground-muted">{hoveredFramework.desc}</p>
             </div>
           </div>
         )}
