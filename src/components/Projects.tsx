@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { motion } from "framer-motion";
 import {
   ChevronDown,
   ExternalLink,
@@ -17,10 +16,29 @@ import { useI18n } from "@/contexts/I18nContext";
 
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   const { t } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentHeight, setContentHeight] = useState(0);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -29,13 +47,17 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
   }, [isExpanded]);
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      className="bg-background-secondary rounded-2xl border border-border overflow-hidden hover:border-foreground/20 transition-all duration-300 group"
+      className={`bg-background-secondary rounded-2xl border border-border overflow-hidden hover:border-foreground/20 transition-all duration-300 group ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
+      style={{
+        transition: isVisible
+          ? "opacity 0.5s ease-out, transform 0.5s ease-out, max-height 0.3s ease-in-out"
+          : "none",
+        transitionDelay: `${index * 0.1}s`,
+      }}
     >
       {/* Card Header */}
       <div
@@ -89,7 +111,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       <div
         style={{
           maxHeight: isExpanded ? `${contentHeight}px` : "0",
-          transition: "max-height 0.3s ease-in-out",
           overflow: "hidden",
         }}
       >
@@ -213,7 +234,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -224,19 +245,20 @@ export default function Projects() {
     <section id="projects" className="py-20 md:py-32 bg-background-secondary/50">
       <div className="max-w-6xl mx-auto px-6">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6 }}
+        <div
           className="mb-16"
+          style={{
+            opacity: 0,
+            transform: "translateY(40px)",
+            animation: "fadeInUp 0.6s ease-out forwards",
+          }}
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">{t("projects.title")}</h2>
           <div className="w-20 h-1 bg-foreground rounded-full" />
           <p className="mt-4 text-foreground-muted max-w-2xl">
             {t("projects.subtitle")}
           </p>
-        </motion.div>
+        </div>
 
         {/* Projects Grid */}
         <div className="grid lg:grid-cols-2 gap-6">
@@ -245,6 +267,15 @@ export default function Projects() {
           ))}
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </section>
   );
 }
