@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useInView } from "framer-motion";
+import { useRef } from "react";
 import {
   Database,
   Cloud,
@@ -10,34 +12,59 @@ import {
   Activity,
   Layers,
   BarChart3,
+  Briefcase,
+  Calendar,
+  ArrowRight,
 } from "lucide-react";
 import { experience } from "@/lib/content";
 import { useI18n } from "@/contexts/I18nContext";
 
 const iconMap: Record<string, React.ReactNode> = {
-  Database: <Database size={24} />,
-  Cloud: <Cloud size={24} />,
-  Server: <Server size={24} />,
-  GitBranch: <GitBranch size={24} />,
-  Shield: <Shield size={24} />,
-  Activity: <Activity size={24} />,
-  Layers: <Layers size={24} />,
-  BarChart3: <BarChart3 size={24} />,
+  Database: <Database size={20} />,
+  Cloud: <Cloud size={20} />,
+  Server: <Server size={20} />,
+  GitBranch: <GitBranch size={20} />,
+  Shield: <Shield size={20} />,
+  Activity: <Activity size={20} />,
+  Layers: <Layers size={20} />,
+  BarChart3: <BarChart3 size={20} />,
 };
+
+function SectionWrapper({ children, id }: { children: React.ReactNode; id: string }) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-10% 0px" });
+
+  return (
+    <section
+      ref={ref}
+      id={id}
+      className="min-h-screen flex items-center py-20 md:py-32"
+    >
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={isInView ? { opacity: 1 } : { opacity: 0 }}
+        transition={{ duration: 0.8 }}
+        className="w-full"
+      >
+        {children}
+      </motion.div>
+    </section>
+  );
+}
 
 export default function Experience() {
   const { t } = useI18n();
+  const exp = experience[0]; // Single experience
 
   return (
-    <section id="experience" className="py-20 md:py-32">
-      <div className="max-w-6xl mx-auto px-6">
+    <SectionWrapper id="experience">
+      <div className="max-w-5xl mx-auto px-6">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-16"
+          className="mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
             {t("experience.title")}
@@ -45,72 +72,84 @@ export default function Experience() {
           <div className="w-20 h-1 bg-foreground rounded-full" />
         </motion.div>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Timeline Line */}
-          <div className="absolute left-0 md:left-1/2 top-0 bottom-0 w-px bg-border md:-translate-x-1/2" />
+        {/* Main Experience Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="relative"
+        >
+          {/* Company Badge */}
+          <div className="absolute -top-4 left-6 px-4 py-1.5 bg-accent-primary text-white text-sm font-semibold rounded-full shadow-lg z-10">
+            {exp.company}
+          </div>
 
-          {experience.map((exp, index) => (
-            <motion.div
-              key={exp.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative flex flex-col md:flex-row gap-8 mb-12 ${
-                index % 2 === 0 ? "md:flex-row-reverse" : ""
-              }`}
-            >
-              {/* Timeline Node */}
-              <div className="absolute left-0 md:left-1/2 w-4 h-4 bg-foreground rounded-full border-4 border-background md:-translate-x-1/2 -translate-y-1 z-10">
-                <div className="absolute inset-0 bg-foreground rounded-full animate-ping opacity-50" />
-              </div>
-
-              {/* Content */}
-              <div className={`flex-1 ml-8 md:ml-0 ${index % 2 === 0 ? "md:pr-12" : "md:pl-12"}`}>
-                <div className="p-6 bg-background-secondary rounded-2xl border border-border hover:border-foreground/20 transition-colors">
-                  {/* Header */}
-                  <div className="mb-4">
-                    <span className="inline-block px-3 py-1 text-xs bg-foreground/5 text-foreground rounded-full mb-2">
-                      {exp.period}
-                    </span>
-                    <h3 className="text-xl font-bold mb-1 text-foreground">{exp.role}</h3>
-                    <p className="text-foreground-muted">{exp.company}</p>
-                  </div>
-
-                  {/* Highlights */}
-                  <ul className="space-y-3 mb-6">
-                    {exp.highlights.map((highlight, i) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-3 text-sm text-foreground-muted"
-                      >
-                        <span className="mt-1.5 w-1.5 h-1.5 bg-foreground rounded-full flex-shrink-0" />
-                        {highlight}
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Technologies */}
-                  <div className="flex flex-wrap gap-2">
-                    {exp.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className="px-3 py-1 text-xs bg-background-accent rounded-full text-foreground-muted font-mono"
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
+          {/* Card */}
+          <div className="bg-background-secondary rounded-2xl border border-border p-8 pt-10 hover:border-foreground/20 transition-all duration-300">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 pb-6 border-b border-border">
+              <div>
+                <h3 className="text-2xl font-bold text-foreground mb-2">{exp.role}</h3>
+                <div className="flex items-center gap-2 text-foreground-muted">
+                  <Calendar size={16} />
+                  <span>{exp.period}</span>
                 </div>
               </div>
+              <div className="flex gap-2">
+                {exp.technologies.slice(0, 4).map((tech) => (
+                  <span
+                    key={tech}
+                    className="px-3 py-1.5 text-xs bg-background-accent rounded-full text-foreground-muted font-medium"
+                  >
+                    {tech}
+                  </span>
+                ))}
+                {exp.technologies.length > 4 && (
+                  <span className="px-3 py-1.5 text-xs bg-accent-primary/10 text-accent-primary rounded-full font-medium">
+                    +{exp.technologies.length - 4}
+                  </span>
+                )}
+              </div>
+            </div>
 
-              {/* Spacer for alternating layout */}
-              <div className="hidden md:block flex-1" />
-            </motion.div>
-          ))}
-        </div>
+            {/* Highlights Grid */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {exp.highlights.map((highlight, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+                  className="flex items-start gap-3 p-4 bg-background rounded-xl border border-border/50 hover:border-accent-primary/30 hover:bg-accent-primary/5 transition-all duration-300"
+                >
+                  <div className="p-2 bg-accent-primary/10 rounded-lg text-accent-primary mt-0.5">
+                    <ArrowRight size={16} />
+                  </div>
+                  <p className="text-sm text-foreground-muted leading-relaxed">{highlight}</p>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Tech Stack Bar */}
+            <div className="mt-8 pt-6 border-t border-border">
+              <p className="text-xs text-foreground-muted uppercase tracking-wider mb-3">Tech Stack</p>
+              <div className="flex flex-wrap gap-2">
+                {exp.technologies.map((tech, index) => (
+                  <motion.span
+                    key={tech}
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3, delay: 0.5 + index * 0.05 }}
+                    className="px-3 py-1.5 text-sm bg-background rounded-lg border border-border text-foreground hover:border-accent-primary hover:text-accent-primary transition-colors cursor-default"
+                  >
+                    {tech}
+                  </motion.span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
-    </section>
+    </SectionWrapper>
   );
 }
