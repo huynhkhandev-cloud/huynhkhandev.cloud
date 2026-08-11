@@ -53,22 +53,19 @@ export default function Header() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled
-            ? "bg-background/80 backdrop-blur-lg border-b border-border"
-            : "bg-transparent"
-        }`}
+        className="fixed top-3 left-3 right-3 z-50"
       >
-        <nav className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <a
-            href="#"
-            className="text-xl font-bold text-foreground"
-          >
-            KH
-          </a>
+        <div className="liquid-glass mx-auto max-w-6xl">
+          <nav className="px-6 py-4 flex items-center justify-between">
+            <a
+              href="#"
+              className="text-xl font-bold text-foreground"
+            >
+              KH
+            </a>
 
-          {/* Desktop Nav */}
-          <ul className="hidden md:flex items-center gap-8">
+            {/* Desktop Nav */}
+            <ul className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <li key={link.href}>
                 <a
@@ -134,8 +131,9 @@ export default function Header() {
               <Menu size={24} />
             </button>
           </div>
-        </nav>
-      </motion.header>
+          </nav>
+          </div>
+        </motion.header>
 
       {/* Mobile Menu Overlay */}
       <AnimatePresence>
@@ -144,8 +142,9 @@ export default function Header() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg md:hidden"
+            className="fixed inset-0 z-50 bg-background/80 backdrop-blur-xl md:hidden"
           >
+            <div className="liquid-glass fixed inset-x-3 top-3 mx-auto max-w-6xl h-[calc(100vh-1.5rem)] rounded-2xl flex flex-col">
             <div className="flex flex-col h-full p-6">
               <div className="flex items-center justify-between mb-12">
                 <span className="text-xl font-bold text-foreground">KH</span>
@@ -219,6 +218,7 @@ export default function Header() {
                   </a>
                 </div>
               </div>
+            </div>
             </div>
           </motion.div>
         )}

@@ -28,6 +28,32 @@
   --shadow: rgba(0, 0, 0, 0.3);
 }
 
+/* Liquid Glass Variables */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-shadow: rgba(0, 0, 0, 0.08);
+  --glass-blur: 20px;
+}
+
+[data-theme="dark"] {
+  --glass-bg: rgba(30, 30, 30, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* Liquid Glass Effect Class */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: 15px;
+  box-shadow:
+    0 4px 24px var(--glass-shadow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-background-secondary: var(--background-secondary);
@@ -38,6 +64,9 @@
   --color-accent-secondary: var(--accent-secondary);
   --color-success: var(--success);
   --color-border: var(--border);
+  --color-glass-bg: var(--glass-bg);
+  --color-glass-border: var(--glass-border);
+  --color-glass-shadow: var(--glass-shadow);
   --font-heading: var(--font-space-grotesk), sans-serif;
   --font-body: var(--font-inter), sans-serif;
   --font-mono: var(--font-jetbrains-mono), monospace;
