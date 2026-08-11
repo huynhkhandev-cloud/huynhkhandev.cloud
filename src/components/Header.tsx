@@ -74,7 +74,9 @@ export default function Header() {
         transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         className="fixed top-3 left-3 right-3 z-50"
       >
-        <div className="liquid-glass mx-auto max-w-4xl">
+        <div className="liquid-glass relative">
+          {/* Top shine for depth */}
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
           <nav className="px-5 py-3.5 flex items-center justify-between">
             {/* Logo */}
             <a
@@ -106,25 +108,31 @@ export default function Header() {
                 })}
               </ul>
 
-              {/* Liquid Glass Blob Indicator - Apple Style */}
+              {/* Liquid Glass Tab Indicator - Apple Vision Pro Style */}
               <motion.div
-                className="absolute top-1/2 -translate-y-1/2 rounded-2xl bg-white/25 backdrop-blur-2xl border border-white/30 shadow-xl shadow-black/5"
+                className="absolute top-1/2 -translate-y-1/2 rounded-2xl pointer-events-none"
+                style={{
+                  background: "var(--tab-active-bg)",
+                  boxShadow: "var(--tab-active-shadow)",
+                  border: "1px solid rgba(0, 0, 0, 0.06)",
+                }}
                 initial={false}
                 animate={{
                   left: indicatorStyle.left,
-                  top: "50%",
                   width: indicatorStyle.width,
                   opacity: activeSection ? 1 : 0,
                 }}
                 transition={{
                   type: "spring",
-                  stiffness: 200,
-                  damping: 25,
-                  mass: 0.8,
+                  stiffness: 180,
+                  damping: 22,
+                  mass: 0.6,
                 }}
               >
-                {/* Inner highlight */}
-                <div className="absolute inset-x-1 top-1 h-1/3 rounded-xl bg-gradient-to-b from-white/40 to-transparent" />
+                {/* Subtle inner glow */}
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/30 via-transparent to-transparent" />
+                {/* Top shine line */}
+                <div className="absolute inset-x-2 top-1 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
               </motion.div>
             </div>
 
