@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useCallback } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
@@ -53,43 +53,85 @@ function LogoItem({ framework, position, onHover, onLeave }: {
   onHover: () => void;
   onLeave: () => void;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const meshRef = useRef<THREE.Mesh>(null);
+  const { camera, gl } = useThree();
 
   const iconUrl = `https://icon.horse/icon/${new URL(framework.link).hostname}`;
 
+  const handlePointerDown = (e: any) => {
+    e.stopPropagation();
+    setDragging(true);
+    document.body.style.cursor = "grabbing";
+  };
+
+  const handlePointerUp = () => {
+    setDragging(false);
+    document.body.style.cursor = "auto";
+  };
+
+  const handlePointerMove = (e: any) => {
+    if (dragging && meshRef.current) {
+      e.stopPropagation();
+      // Convert screen movement to world space
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      const vector = new THREE.Vector3(x, y, 0.5).unproject(camera);
+      const dir = vector.sub(camera.position).normalize();
+      const distance = -camera.position.z / dir.z;
+      const pos = camera.position.clone().add(dir.multiplyScalar(distance));
+      meshRef.current.position.x = pos.x;
+      meshRef.current.position.y = pos.y;
+    }
+  };
+
   return (
-    <group
-      position={position}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-        onHover();
-        document.body.style.cursor = "pointer";
-      }}
-      onPointerOut={(e) => {
-        e.stopPropagation();
-        setHovered(false);
-        onLeave();
-        document.body.style.cursor = "auto";
-      }}
-      onClick={(e) => {
-        e.stopPropagation();
-        window.open(framework.link, "_blank");
-      }}
-    >
-      <Html center transform distanceFactor={5}>
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "10px",
-          transition: "all 0.3s ease",
-          transform: hovered ? "scale(1.1)" : "scale(1)",
-        }}>
+    <>
+      <mesh ref={meshRef} position={position} visible={false}>
+        <planeGeometry args={[0.001, 0.001]} />
+      </mesh>
+      <Html
+        position={position}
+        center
+        transform={false}
+        zIndexRange={[10, 0]}
+      >
+        <div
+          onMouseDown={handlePointerDown}
+          onMouseUp={handlePointerUp}
+          onMouseMove={handlePointerMove}
+          onMouseEnter={() => {
+            if (!dragging) {
+              setHovered(true);
+              onHover();
+              document.body.style.cursor = "grab";
+            }
+          }}
+          onMouseLeave={() => {
+            setHovered(false);
+            onLeave();
+            document.body.style.cursor = "auto";
+          }}
+          onClick={() => {
+            if (!dragging) {
+              window.open(framework.link, "_blank");
+            }
+          }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "10px",
+            transition: dragging ? "none" : "all 0.3s ease",
+            transform: hovered ? "scale(1.15)" : "scale(1)",
+            userSelect: "none",
+            cursor: dragging ? "grabbing" : "grab",
+          }}
+        >
           <div style={{
-            width: 72,
-            height: 72,
+            width: 70,
+            height: 70,
             borderRadius: "16px",
             background: "rgba(255,255,255,0.1)",
             backdropFilter: "blur(12px)",
@@ -97,18 +139,20 @@ function LogoItem({ framework, position, onHover, onLeave }: {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            transition: "all 0.3s ease",
             boxShadow: hovered ? "0 8px 32px rgba(0,0,0,0.3)" : "0 4px 16px rgba(0,0,0,0.2)",
             overflow: "hidden",
             padding: "12px",
+            transition: dragging ? "none" : "all 0.3s ease",
           }}>
             <img
               src={iconUrl}
               alt={framework.name}
+              draggable={false}
               style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "contain",
+                pointerEvents: "none",
               }}
             />
           </div>
@@ -126,12 +170,13 @@ function LogoItem({ framework, position, onHover, onLeave }: {
             transition: "all 0.3s ease",
             border: "1px solid rgba(255,255,255,0.1)",
             letterSpacing: "0.3px",
+            pointerEvents: "none",
           }}>
             {framework.name}
           </span>
         </div>
       </Html>
-    </group>
+    </>
   );
 }
 
@@ -140,17 +185,30 @@ function Scene({ onFrameworkHover, onFrameworkLeave }: {
   onFrameworkLeave: () => void;
 }) {
   const positions = useMemo<[number, number, number][]>(() => {
+    // Random scatter across full screen
     const result: [number, number, number][] = [];
-    const cols = 4;
-    const spacingX = 5;
-    const spacingY = 4;
+    const usedPositions: [number, number][] = [];
 
-    frameworks.forEach((_, i) => {
-      const row = Math.floor(i / cols);
-      const col = i % cols;
-      const x = (col - (cols - 1) / 2) * spacingX;
-      const y = ((cols - 1) / 2 - row) * spacingY;
-      result.push([x, y, 0]);
+    const minDistance = 4;
+
+    frameworks.forEach(() => {
+      let attempts = 0;
+      let pos: [number, number] = [0, 0];
+      while (attempts < 100) {
+        // Random position in world units (camera at z=15, fov=50)
+        const x = (Math.random() - 0.5) * 24;
+        const y = (Math.random() - 0.5) * 14;
+        const tooClose = usedPositions.some(
+          ([ux, uy]) => Math.sqrt((ux - x) ** 2 + (uy - y) ** 2) < minDistance
+        );
+        if (!tooClose) {
+          pos = [x, y];
+          break;
+        }
+        attempts++;
+      }
+      usedPositions.push(pos);
+      result.push([pos[0], pos[1], 0]);
     });
 
     return result;
@@ -213,7 +271,7 @@ export default function Hero() {
     <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
       {/* Three.js Canvas */}
       <div className="absolute inset-0">
-        <Canvas camera={{ position: [0, 0, 12], fov: 50 }}>
+        <Canvas camera={{ position: [0, 0, 15], fov: 55 }}>
           <Scene
             onFrameworkHover={setHoveredFramework}
             onFrameworkLeave={() => setHoveredFramework(null)}
@@ -223,10 +281,10 @@ export default function Hero() {
 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/40 to-background pointer-events-none" />
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 40%, var(--background) 100%)" }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 50%, var(--background) 100%)" }} />
 
       {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+      <div className="max-w-4xl mx-auto px-6 text-center relative z-10 pointer-events-none">
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -258,7 +316,7 @@ export default function Hero() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 pointer-events-auto"
         >
           <a
             href="#projects"
@@ -307,6 +365,11 @@ export default function Hero() {
           </div>
         )}
       </motion.div>
+
+      {/* Hint */}
+      <div className="absolute top-24 right-6 text-xs text-foreground-muted/60 pointer-events-none">
+        <p>💡 Kéo thả logo để sắp xếp</p>
+      </div>
     </section>
   );
 }
