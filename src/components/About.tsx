@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import {
   Server,
   Monitor,
@@ -11,6 +11,11 @@ import {
   Code2,
   Terminal,
   Layers,
+  Zap,
+  Globe,
+  HardDrive,
+  Cpu,
+  Lock,
 } from "lucide-react";
 import { skills } from "@/lib/content";
 import { useI18n } from "@/contexts/I18nContext";
@@ -29,6 +34,38 @@ const skillKeys: Record<string, string> = {
   "Database": "about.skills.database",
   "Data & BI": "about.skills.dataBI",
   "Cloud & DevOps": "about.skills.cloudDevOps",
+};
+
+// Icons for each skill item
+const itemIconMap: Record<string, React.ReactNode> = {
+  // Backend
+  "NestJS": <Zap size={16} />,
+  "Python": <Terminal size={16} />,
+  "FastAPI": <Zap size={16} />,
+  "Express": <Server size={16} />,
+  "TypeScript": <Code2 size={16} />,
+  "Node.js": <Server size={16} />,
+  // Frontend
+  "Next.js": <Globe size={16} />,
+  "React": <Layers size={16} />,
+  "Framer Motion": <Layers size={16} />,
+  "Tailwind CSS": <Layers size={16} />,
+  // Database
+  "PostgreSQL": <Database size={16} />,
+  "Prisma": <HardDrive size={16} />,
+  "SQLAlchemy": <Database size={16} />,
+  "MongoDB": <Database size={16} />,
+  // Data & BI
+  "Azure Data Factory": <Cpu size={16} />,
+  "Databricks": <BarChart3 size={16} />,
+  "Power BI": <BarChart3 size={16} />,
+  "dbt": <Database size={16} />,
+  // Cloud & DevOps
+  "Azure": <Cloud size={16} />,
+  "AWS": <Cloud size={16} />,
+  "Docker": <Lock size={16} />,
+  "GitHub Actions": <Cpu size={16} />,
+  "CI/CD": <Zap size={16} />,
 };
 
 function SectionWrapper({ children, id }: { children: React.ReactNode; id: string }) {
@@ -150,12 +187,16 @@ export default function About() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {skill.items.map((item) => (
-                    <span
+                    <motion.div
                       key={item}
-                      className="px-3 py-1 text-sm bg-background-accent rounded-full text-foreground-muted hover:text-foreground transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      className="group px-3 py-1.5 text-sm bg-background-accent rounded-full text-foreground-muted hover:text-foreground transition-colors flex items-center gap-2 cursor-default"
                     >
-                      {item}
-                    </span>
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity text-accent-primary">
+                        {itemIconMap[item] || <Zap size={16} />}
+                      </span>
+                      <span>{item}</span>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>
